@@ -157,18 +157,6 @@ pytest
 pytest --cov=app tests/
 ```
 
-##  15-Day Development Plan
-
-- **Days 1-2**:  Backend core + Telegram bot
-- **Days 3-4**: LLM integration + Task Planner Agent
-- **Days 5-6**: Vector DB + Suggestion Agent
-- **Days 7-8**: Analytics Agent + priority engine
-- **Days 9-10**: Frontend dashboard
-- **Days 11-12**: Notification Agent + reminders
-- **Days 13**: Deployment
-- **Days 14**: Testing + bug fixes
-- **Days 15**: Demo + documentation
-
 ##  Deployment
 
 ### Backend (Render)
