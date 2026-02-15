@@ -7,9 +7,12 @@ from pydantic_settings import BaseSettings
 from pydantic import Field
 from typing import Optional
 
-
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
+
+    # Agent Settings
+    max_retry_attempts: int = Field(default=3, alias="MAX_RETRY_ATTEMPTS")
+    agent_timeout_seconds: int = Field(default=60, alias="AGENT_TIMEOUT_SECONDS") 
 
     # App Settings
     app_name: str = Field(default="Smart Personal Planner", alias="APP_NAME")

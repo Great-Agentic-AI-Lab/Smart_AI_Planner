@@ -1,6 +1,7 @@
 """
 Base Agent class for all agents in the system.
 Provides standardized LLM orchestration using Gemini via LangChain.
+FIXED: Increased timeout for slow API responses
 """
 
 from abc import ABC, abstractmethod
@@ -35,7 +36,7 @@ class BaseAgent(ABC):
         name: str,
         system_prompt: str,
         temperature: float = 0.3,
-        timeout: int = 20,
+        timeout: int = 60,  # FIXED: Increased from 20 to 60 seconds
     ):
         """
         Initialize base agent.
@@ -61,14 +62,18 @@ STRICT RULES:
 - Do not include explanations outside JSON when JSON is requested.
 """
 
-        # Initialize Gemini LLM
+        # Initialize Gemini LLM with validation
+        if not settings.google_api_key:
+            logger.error(f"{self.name} initialization failed: GOOGLE_API_KEY not set in .env")
+            raise ValueError("GOOGLE_API_KEY is required but not set in .env file")
+
         self.llm = ChatGoogleGenerativeAI(
             model=settings.google_model,
             google_api_key=settings.google_api_key,
             temperature=temperature,
         )
 
-        logger.info(f"{self.name} initialized with model={settings.google_model}")
+        logger.info(f"{self.name} initialized with model={settings.google_model}, timeout={timeout}s")
 
     @abstractmethod
     async def execute(self, **kwargs) -> Dict[str, Any]:
@@ -107,6 +112,7 @@ STRICT RULES:
 
             chain = prompt | self.llm | StrOutputParser()
 
+            logger.info(f"{self.name} calling LLM with {self.timeout}s timeout...")
             response = await asyncio.wait_for(
                 chain.ainvoke({}),
                 timeout=self.timeout,
@@ -131,11 +137,11 @@ STRICT RULES:
             return {"success": True, "data": parsed_data}
 
         except asyncio.TimeoutError:
-            logger.error(f"{self.name} LLM request timed out")
-            return {"success": False, "error": "LLM request timed out"}
+            logger.error(f"{self.name} LLM request timed out after {self.timeout}s")
+            return {"success": False, "error": f"LLM request timed out after {self.timeout}s"}
 
         except Exception as e:
-            logger.exception(f"{self.name} unexpected error")
+            logger.exception(f"{self.name} unexpected error: {e}")
             return {"success": False, "error": str(e)}
 
     def _safe_json_parse(self, response: str):

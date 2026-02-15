@@ -3,7 +3,7 @@ User model for storing user information.
 """
 
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -15,23 +15,23 @@ class User(Base):
     __tablename__ = "users"
 
     # Primary key
-    id: int = Column(Integer, primary_key=True, index=True)
-    telegram_id: int = Column(Integer, unique=True, index=True, nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    telegram_id = Column(Integer, unique=True, index=True, nullable=False)
 
     # User info
-    username: Optional[str] = Column(String, nullable=True)
-    first_name: Optional[str] = Column(String, nullable=True)
-    last_name: Optional[str] = Column(String, nullable=True)
-    email: Optional[str] = Column(String, unique=True, index=True, nullable=True)
+    username = Column(String, nullable=True)
+    first_name = Column(String, nullable=True)
+    last_name = Column(String, nullable=True)
+    email = Column(String, unique=True, index=True, nullable=True)
 
     # Preferences
-    timezone: str = Column(String, default="UTC")
-    notifications_enabled: bool = Column(Boolean, default=True)
+    timezone = Column(String, default="UTC")
+    notifications_enabled = Column(Boolean, default=True)
 
     # Timestamps
-    created_at: datetime = Column(DateTime, default=datetime.utcnow)
-    updated_at: datetime = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    last_active: datetime = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_active = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
     tasks = relationship(
@@ -44,6 +44,15 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan"
     )
+    preferences = relationship(
+        "UserPreferences",
+        back_populates="user",
+        uselist=False
+    )
+    birthdays = relationship(
+        "Birthday",
+        back_populates="user"
+    )
 
     def __repr__(self) -> str:
         return (
@@ -51,9 +60,6 @@ class User(Base):
             f"username={self.username}, email={self.email})>"
         )
 
-    # --------------------------
-    # Helper methods
-    # --------------------------
     def full_name(self) -> str:
         """Return user's full name if available, else username."""
         if self.first_name or self.last_name:
@@ -75,6 +81,6 @@ class User(Base):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "last_active": self.last_active.isoformat() if self.last_active else None,
-            "task_count": len(self.tasks),
-            "event_count": len(self.events),
+            "task_count": len(self.tasks) if self.tasks else 0,
+            "event_count": len(self.events) if self.events else 0,
         }
