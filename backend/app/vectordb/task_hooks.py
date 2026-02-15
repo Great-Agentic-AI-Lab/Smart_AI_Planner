@@ -28,7 +28,7 @@ async def on_task_created(task: Task) -> bool:
 
         # Check if embedding is all zeros (failed generation)
         if all(v == 0.0 for v in embedding):
-            logger.warning(f"⚠️ Embedding generation failed for task {task.id}, skipping storage")
+            logger.warning(f" Embedding generation failed for task {task.id}, skipping storage")
             return False
 
         # Prepare metadata
@@ -52,12 +52,12 @@ async def on_task_created(task: Task) -> bool:
         )
 
         if success:
-            logger.info(f"✅ Stored embedding for task {task.id}")
+            logger.info(f" Stored embedding for task {task.id}")
 
         return success
 
     except Exception as e:
-        logger.error(f"❌ Failed to store embedding for task {task.id}: {e}")
+        logger.error(f" Failed to store embedding for task {task.id}: {e}")
         return False
 
 
@@ -78,7 +78,7 @@ async def on_task_completed(task: Task) -> bool:
 
         # Check if embedding is all zeros (failed generation)
         if all(v == 0.0 for v in embedding):
-            logger.warning(f"⚠️ Embedding generation failed for task {task.id}, skipping update")
+            logger.warning(f" Embedding generation failed for task {task.id}, skipping update")
             return False
 
         # Update metadata with completion info
@@ -104,12 +104,12 @@ async def on_task_completed(task: Task) -> bool:
         )
 
         if success:
-            logger.info(f"✅ Updated completed task {task.id} in vector DB")
+            logger.info(f" Updated completed task {task.id} in vector DB")
 
         return success
 
     except Exception as e:
-        logger.error(f"❌ Failed to update completed task {task.id}: {e}")
+        logger.error(f" Failed to update completed task {task.id}: {e}")
         return False
 
 
@@ -124,10 +124,10 @@ async def on_task_deleted(task_id: int) -> bool:
         success = await pinecone.delete_task(str(task_id))
 
         if success:
-            logger.info(f"✅ Deleted task {task_id} from vector DB")
+            logger.info(f" Deleted task {task_id} from vector DB")
 
         return success
 
     except Exception as e:
-        logger.error(f"❌ Failed to delete task {task_id}: {e}")
+        logger.error(f" Failed to delete task {task_id}: {e}")
         return False

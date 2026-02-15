@@ -1,8 +1,8 @@
-# 🤖 Smart Personal Planner & Assistant
+#  Smart Personal Planner & Assistant
 
 AI-powered personal planner with multi-agent orchestration, intelligent task prioritization, and natural language interface.
 
-## ✨ Features
+##  Features
 
 - **Multi-Agent Architecture**: 4 specialized AI agents working together
   - Task Planner Agent: Prioritizes and schedules tasks
@@ -16,7 +16,7 @@ AI-powered personal planner with multi-agent orchestration, intelligent task pri
 - **REST API**: Full CRUD for tasks and events
 - **React Dashboard**: Visual calendar and task tracking
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
 Frontend (React)  ←→  FastAPI Backend  ←→  PostgreSQL
@@ -30,7 +30,7 @@ Frontend (React)  ←→  FastAPI Backend  ←→  PostgreSQL
                   Telegram Bot
 ```
 
-## 🚀 Quick Start (Day 1)
+##  Quick Start (Day 1)
 
 ### Prerequisites
 - Python 3.9+
@@ -107,7 +107,7 @@ Visit: http://localhost:8000/docs for API documentation
    - `/listtasks`
    - `/suggest`
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 smart-planner-ai/
@@ -127,7 +127,7 @@ smart-planner-ai/
 └── docs/                    # Documentation
 ```
 
-## 🔧 API Endpoints
+##  API Endpoints
 
 ### Tasks
 - `POST /api/tasks/` - Create task
@@ -147,7 +147,7 @@ smart-planner-ai/
 ### Chat
 - `POST /api/chat/` - Natural language interface
 
-## 🧪 Testing
+##  Testing
 
 ```bash
 # Run tests
@@ -157,9 +157,9 @@ pytest
 pytest --cov=app tests/
 ```
 
-## 📅 15-Day Development Plan
+##  15-Day Development Plan
 
-- **Days 1-2**: ✅ Backend core + Telegram bot
+- **Days 1-2**:  Backend core + Telegram bot
 - **Days 3-4**: LLM integration + Task Planner Agent
 - **Days 5-6**: Vector DB + Suggestion Agent
 - **Days 7-8**: Analytics Agent + priority engine
@@ -169,7 +169,7 @@ pytest --cov=app tests/
 - **Days 14**: Testing + bug fixes
 - **Days 15**: Demo + documentation
 
-## 🚢 Deployment
+##  Deployment
 
 ### Backend (Render)
 ```bash
@@ -185,7 +185,7 @@ npm run build
 vercel deploy
 ```
 
-## 📝 Environment Variables
+##  Environment Variables
 
 See `.env.example` for all required variables:
 - Database credentials
@@ -193,15 +193,15 @@ See `.env.example` for all required variables:
 - Telegram bot token
 - App settings
 
-## 🤝 Contributing
+##  Contributing
 
 This is a personal project for learning. Feel free to fork and experiment!
 
-## 📄 License
+##  License
 
 MIT
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 Built as a portfolio project to demonstrate:
 - Multi-agent AI systems
@@ -212,5 +212,5 @@ Built as a portfolio project to demonstrate:
 
 ---
 
-**Status**: Day 1 Complete ✅  
+**Status**: Day 1 Complete   
 **Next**: Day 2 - Task CRUD + Telegram commands

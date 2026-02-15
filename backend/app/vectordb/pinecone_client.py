@@ -22,7 +22,7 @@ class PineconeClient:
 
         try:
             if not settings.pinecone_api_key:
-                logger.warning("⚠️ Pinecone API key not set. Vector search disabled.")
+                logger.warning(" Pinecone API key not set. Vector search disabled.")
                 return
 
             self.pc = Pinecone(api_key=settings.pinecone_api_key)
@@ -42,13 +42,13 @@ class PineconeClient:
                         region='us-east-1'
                     )
                 )
-                logger.info(f"✅ Created index: {self.index_name}")
+                logger.info(f" Created index: {self.index_name}")
 
             self.index = self.pc.Index(self.index_name)
-            logger.info(f"✅ Connected to Pinecone index: {self.index_name}")
+            logger.info(f" Connected to Pinecone index: {self.index_name}")
 
         except Exception as e:
-            logger.error(f"❌ Pinecone initialization failed: {e}")
+            logger.error(f" Pinecone initialization failed: {e}")
             self.pc = None
             self.index = None
 
@@ -60,13 +60,13 @@ class PineconeClient:
     ) -> bool:
         """Store a task embedding in Pinecone."""
         if not self.pc or not self.index:
-            logger.warning("⚠️ Pinecone not initialized, skipping upsert")
+            logger.warning(" Pinecone not initialized, skipping upsert")
             return False
 
         try:
             # Validate embedding dimension
             if len(embedding) != 384:
-                logger.warning(f"⚠️ Embedding dimension {len(embedding)} != 384, skipping upsert")
+                logger.warning(f" Embedding dimension {len(embedding)} != 384, skipping upsert")
                 return False
 
             vector = {
@@ -76,11 +76,11 @@ class PineconeClient:
             }
 
             self.index.upsert(vectors=[vector])
-            logger.info(f"✅ Stored embedding for task {task_id}")
+            logger.info(f" Stored embedding for task {task_id}")
             return True
 
         except Exception as e:
-            logger.error(f"❌ Failed to upsert task {task_id}: {e}")
+            logger.error(f" Failed to upsert task {task_id}: {e}")
             return False
 
     async def search_similar(
@@ -91,13 +91,13 @@ class PineconeClient:
     ) -> List[Dict[str, Any]]:
         """Search for similar tasks based on embedding."""
         if not self.pc or not self.index:
-            logger.warning("⚠️ Pinecone not initialized, skipping search")
+            logger.warning(" Pinecone not initialized, skipping search")
             return []
 
         try:
             # Validate query dimension
             if len(query_embedding) != 384:
-                logger.warning(f"⚠️ Query embedding dimension {len(query_embedding)} != 384, skipping search")
+                logger.warning(f" Query embedding dimension {len(query_embedding)} != 384, skipping search")
                 return []
 
             results = self.index.query(
@@ -115,31 +115,31 @@ class PineconeClient:
                     'metadata': match.metadata
                 })
 
-            logger.info(f"✅ Found {len(similar_tasks)} similar tasks")
+            logger.info(f" Found {len(similar_tasks)} similar tasks")
             return similar_tasks
 
         except Exception as e:
-            logger.error(f"❌ Search failed: {e}")
+            logger.error(f" Search failed: {e}")
             return []
 
     async def delete_task(self, task_id: str) -> bool:
         """Delete a task embedding from Pinecone."""
         if not self.pc or not self.index:
-            logger.warning("⚠️ Pinecone not initialized, skipping deletion")
+            logger.warning(" Pinecone not initialized, skipping deletion")
             return False
 
         try:
             self.index.delete(ids=[f"task_{task_id}"])
-            logger.info(f"✅ Deleted embedding for task {task_id}")
+            logger.info(f" Deleted embedding for task {task_id}")
             return True
         except Exception as e:
-            logger.error(f"❌ Failed to delete task {task_id}: {e}")
+            logger.error(f" Failed to delete task {task_id}: {e}")
             return False
 
     async def get_stats(self) -> Dict[str, Any]:
         """Get index statistics."""
         if not self.pc or not self.index:
-            logger.warning("⚠️ Pinecone not initialized, no stats available")
+            logger.warning(" Pinecone not initialized, no stats available")
             return {}
 
         try:
@@ -150,7 +150,7 @@ class PineconeClient:
                 'index_fullness': stats.index_fullness
             }
         except Exception as e:
-            logger.error(f"❌ Failed to get stats: {e}")
+            logger.error(f" Failed to get stats: {e}")
             return {}
 
 

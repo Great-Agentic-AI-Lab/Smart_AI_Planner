@@ -64,7 +64,7 @@ Be encouraging and motivational. Help users make smart decisions.
         Returns:
             Suggestion with reasoning and alternatives
         """
-        logger.info("🤔 Generating task suggestion...")
+        logger.info(" Generating task suggestion...")
         
         if not pending_tasks:
             return {
@@ -91,7 +91,7 @@ Be encouraging and motivational. Help users make smart decisions.
             
             if result['success']:
                 suggestion = result['data']
-                logger.info(f"✅ Suggested task ID: {suggestion.get('recommended_task_id')}")
+                logger.info(f" Suggested task ID: {suggestion.get('recommended_task_id')}")
                 return {
                     'success': True,
                     **suggestion
@@ -101,7 +101,7 @@ Be encouraging and motivational. Help users make smart decisions.
                 return self._fallback_suggestion(pending_tasks)
                 
         except Exception as e:
-            logger.error(f"❌ Suggestion failed: {e}")
+            logger.error(f" Suggestion failed: {e}")
             return self._fallback_suggestion(pending_tasks)
     
     async def _get_similar_tasks_context(
@@ -151,7 +151,7 @@ Be encouraging and motivational. Help users make smart decisions.
                 return "No similar past tasks found (user is new or few completed tasks)."
                 
         except Exception as e:
-            logger.warning(f"⚠️ RAG lookup failed: {e}")
+            logger.warning(f" RAG lookup failed: {e}")
             return "Past task history unavailable."
     
     def _build_suggestion_prompt(

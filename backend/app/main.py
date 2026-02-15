@@ -43,11 +43,11 @@ async def lifespan(app: FastAPI):
         if settings.telegram_bot_token:
             from app.telegram.bot import start_bot
             await start_bot()
-            logger.info("✅ Telegram bot started")
+            logger.info(" Telegram bot started")
         else:
-            logger.warning("⚠️ No Telegram token - bot disabled")
+            logger.warning(" No Telegram token - bot disabled")
     except Exception as e:
-        logger.warning(f"⚠️ Telegram bot failed to start: {e}")
+        logger.warning(f" Telegram bot failed to start: {e}")
         logger.info("Server will continue without Telegram bot")
 
     yield
@@ -55,15 +55,15 @@ async def lifespan(app: FastAPI):
     # ---------------------------
     # Shutdown
     # ---------------------------
-    logger.info("👋 Shutting down Smart Personal Planner API...")
+    logger.info(" Shutting down Smart Personal Planner API...")
 
     # Stop Telegram bot
     try:
         from app.telegram.bot import stop_bot
         await stop_bot()
-        logger.info("✅ Telegram bot stopped")
+        logger.info(" Telegram bot stopped")
     except Exception as e:
-        logger.warning(f"⚠️ Telegram bot failed to stop: {e}")
+        logger.warning(f" Telegram bot failed to stop: {e}")
 
 
 # ---------------------------

@@ -24,7 +24,7 @@ async def check_birthdays_and_send_wishes():
     Daily job: Check for birthdays and send wishes.
     Runs at 9:00 AM UTC daily.
     """
-    logger.info("🎂 Running daily birthday check...")
+    logger.info(" Running daily birthday check...")
     
     db = SessionLocal()
     try:
@@ -55,17 +55,17 @@ async def check_birthdays_and_send_wishes():
                 
                 if wish_data['success']:
                     # Send via Telegram
-                    message = f"🎂 **Birthday Reminder!**\n\n{wish_data['message']}"
+                    message = f" **Birthday Reminder!**\n\n{wish_data['message']}"
                     
                     if user.telegram_id:
                         await send_message_to_user(user.telegram_id, message)
                         wishes_sent += 1
-                        logger.info(f"✅ Sent birthday wish for {birthday.person_name}")
+                        logger.info(f" Sent birthday wish for {birthday.person_name}")
         
-        logger.info(f"🎉 Sent {wishes_sent} birthday wishes")
+        logger.info(f" Sent {wishes_sent} birthday wishes")
         
     except Exception as e:
-        logger.error(f"❌ Birthday check failed: {e}")
+        logger.error(f" Birthday check failed: {e}")
     finally:
         db.close()
 
@@ -75,7 +75,7 @@ async def check_festivals_and_send_greetings():
     Daily job: Check for festivals and send greetings.
     Runs at 9:00 AM UTC daily.
     """
-    logger.info("🎊 Running daily festival check...")
+    logger.info(" Running daily festival check...")
     
     db = SessionLocal()
     try:
@@ -111,18 +111,18 @@ async def check_festivals_and_send_greetings():
                         message = (
                             f"{greeting_data['emoji']} **{festival['name']}**\n\n"
                             f"{greeting_data['message']}\n\n"
-                            f"📍 Celebrated in {festival['country']}"
+                            f" Celebrated in {festival['country']}"
                         )
                         
                         if user.telegram_id:
                             await send_message_to_user(user.telegram_id, message)
                             greetings_sent += 1
-                            logger.info(f"✅ Sent {festival['name']} greeting to user {user.id}")
+                            logger.info(f" Sent {festival['name']} greeting to user {user.id}")
         
-        logger.info(f"🎉 Sent {greetings_sent} festival greetings")
+        logger.info(f" Sent {greetings_sent} festival greetings")
         
     except Exception as e:
-        logger.error(f"❌ Festival check failed: {e}")
+        logger.error(f" Festival check failed: {e}")
     finally:
         db.close()
 
@@ -132,7 +132,7 @@ async def send_daily_task_digest():
     Daily job: Send task digest to all users.
     Runs at 9:00 AM UTC daily.
     """
-    logger.info("📊 Sending daily task digests...")
+    logger.info(" Sending daily task digests...")
     
     db = SessionLocal()
     try:
@@ -172,10 +172,10 @@ async def send_daily_task_digest():
             if digest['success']:
                 stats = digest.get('stats', {})
                 message = (
-                    f"📋 **Daily Task Digest**\n\n"
+                    f" **Daily Task Digest**\n\n"
                     f"{digest['message']}\n\n"
-                    f"📊 **Today's Focus:**\n{digest.get('priority_focus', 'Start with high-priority tasks')}\n\n"
-                    f"💡 **Tip:** {digest.get('motivation_tip', 'One task at a time!')}\n\n"
+                    f" **Today's Focus:**\n{digest.get('priority_focus', 'Start with high-priority tasks')}\n\n"
+                    f" **Tip:** {digest.get('motivation_tip', 'One task at a time!')}\n\n"
                     f"Overdue: {stats.get('overdue_count', 0)} | "
                     f"Today: {stats.get('today_count', 0)} | "
                     f"Upcoming: {stats.get('upcoming_count', 0)}"
@@ -184,12 +184,12 @@ async def send_daily_task_digest():
                 if user.telegram_id:
                     await send_message_to_user(user.telegram_id, message)
                     digests_sent += 1
-                    logger.info(f"✅ Sent digest to user {user.id}")
+                    logger.info(f" Sent digest to user {user.id}")
         
-        logger.info(f"📨 Sent {digests_sent} daily digests")
+        logger.info(f" Sent {digests_sent} daily digests")
         
     except Exception as e:
-        logger.error(f"❌ Daily digest failed: {e}")
+        logger.error(f" Daily digest failed: {e}")
     finally:
         db.close()
 
@@ -199,7 +199,7 @@ async def check_task_reminders():
     Hourly job: Check for tasks due soon and send reminders.
     Runs every hour.
     """
-    logger.info("⏰ Checking task reminders...")
+    logger.info(" Checking task reminders...")
     
     db = SessionLocal()
     try:
@@ -239,19 +239,19 @@ async def check_task_reminders():
                 
                 if reminder['success']:
                     message = (
-                        f"⏰ **Task Reminder**\n\n"
+                        f" **Task Reminder**\n\n"
                         f"{reminder['message']}\n\n"
-                        f"💡 {reminder.get('suggested_action', 'Start working on it now!')}"
+                        f" {reminder.get('suggested_action', 'Start working on it now!')}"
                     )
                     
                     await send_message_to_user(user.telegram_id, message)
                     reminders_sent += 1
-                    logger.info(f"✅ Sent reminder for task {task.id}")
+                    logger.info(f" Sent reminder for task {task.id}")
         
-        logger.info(f"📨 Sent {reminders_sent} task reminders")
+        logger.info(f" Sent {reminders_sent} task reminders")
         
     except Exception as e:
-        logger.error(f"❌ Task reminder check failed: {e}")
+        logger.error(f" Task reminder check failed: {e}")
     finally:
         db.close()
 
@@ -261,7 +261,7 @@ def start_scheduler():
     global scheduler
     
     if scheduler is not None:
-        logger.warning("⚠️ Scheduler already running")
+        logger.warning(" Scheduler already running")
         return
     
     scheduler = AsyncIOScheduler()
@@ -298,7 +298,7 @@ def start_scheduler():
     )
     
     scheduler.start()
-    logger.info("✅ Scheduler started with 4 jobs")
+    logger.info(" Scheduler started with 4 jobs")
 
 
 def stop_scheduler():
@@ -308,7 +308,7 @@ def stop_scheduler():
     if scheduler:
         scheduler.shutdown()
         scheduler = None
-        logger.info("✅ Scheduler stopped")
+        logger.info(" Scheduler stopped")
 
 
 # Helper function for sending Telegram messages

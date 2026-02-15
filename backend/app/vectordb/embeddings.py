@@ -17,9 +17,9 @@ class EmbeddingGenerator:
         try:
             # All-MiniLM-L6-v2 is lightweight and fast (384 dimensions)
             self.model = SentenceTransformer('all-MiniLM-L6-v2')
-            logger.info("✅ Embedding generator initialized (Hugging Face - all-MiniLM-L6-v2)")
+            logger.info(" Embedding generator initialized (Hugging Face - all-MiniLM-L6-v2)")
         except Exception as e:
-            logger.error(f"❌ Failed to initialize embedding model: {e}")
+            logger.error(f" Failed to initialize embedding model: {e}")
             self.model = None
 
     async def generate_task_embedding(
@@ -31,7 +31,7 @@ class EmbeddingGenerator:
         """Generate embedding for a task."""
         try:
             if not self.model:
-                logger.warning("⚠️ Embedding model not initialized, returning zero vector (384 dimensions)")
+                logger.warning(" Embedding model not initialized, returning zero vector (384 dimensions)")
                 return [0.0] * 384
 
             text_parts = [title]
@@ -44,25 +44,25 @@ class EmbeddingGenerator:
 
             # Generate embedding
             embedding = self.model.encode(combined_text).tolist()
-            logger.info(f"✅ Generated embedding (dim: {len(embedding)})")
+            logger.info(f" Generated embedding (dim: {len(embedding)})")
             return embedding
 
         except Exception as e:
-            logger.error(f"❌ Embedding generation failed: {e}")
+            logger.error(f" Embedding generation failed: {e}")
             return [0.0] * 384
 
     async def generate_query_embedding(self, query: str) -> List[float]:
         """Generate embedding for search query."""
         try:
             if not self.model:
-                logger.warning("⚠️ Embedding model not initialized, returning zero vector (384 dimensions)")
+                logger.warning(" Embedding model not initialized, returning zero vector (384 dimensions)")
                 return [0.0] * 384
 
             embedding = self.model.encode(query).tolist()
             return embedding
             
         except Exception as e:
-            logger.error(f"❌ Query embedding failed: {e}")
+            logger.error(f" Query embedding failed: {e}")
             return [0.0] * 384
 
 

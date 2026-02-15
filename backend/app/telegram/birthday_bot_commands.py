@@ -25,26 +25,23 @@ BIRTHDAY_NAME, BIRTHDAY_RELATION, BIRTHDAY_DATE, BIRTHDAY_LANGUAGE = range(4)
 
 # Language options (same as settings)
 LANGUAGES = {
-    'en': '🇬🇧 English',
-    'hi': '🇮🇳 Hindi',
-    'mr': '🇮🇳 Marathi',
-    'es': '🇪🇸 Spanish',
-    'fr': '🇫🇷 French',
-    'de': '🇩🇪 German',
-    'ar': '🇸🇦 Arabic',
-    'zh': '🇨🇳 Chinese',
-    'ja': '🇯🇵 Japanese'
+    'en': ' English',
+    'hi': ' Hindi',
+    'mr': ' Marathi',
+    'es': ' Spanish',
+    'fr': ' French',
+    'de': ' German',
+    'ar': ' Arabic',
+    'zh': ' Chinese',
+    'ja': ' Japanese'
 }
 
 
-# ==========================================
 # ADD BIRTHDAY
-# ==========================================
-
 async def addbirthday_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start birthday addition flow."""
     await update.message.reply_text(
-        "🎂 **Add Birthday**\n\n"
+        " **Add Birthday**\n\n"
         "What's the person's name?\n\n"
         "Send /cancel to cancel."
     )
@@ -57,11 +54,11 @@ async def addbirthday_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # Relation options
     keyboard = [
-        [InlineKeyboardButton("👨‍👩‍👧‍👦 Family", callback_data="rel_family")],
-        [InlineKeyboardButton("👫 Friend", callback_data="rel_friend")],
-        [InlineKeyboardButton("💼 Colleague", callback_data="rel_colleague")],
-        [InlineKeyboardButton("💑 Partner", callback_data="rel_partner")],
-        [InlineKeyboardButton("✏️ Custom", callback_data="rel_custom")]
+        [InlineKeyboardButton("‍‍‍ Family", callback_data="rel_family")],
+        [InlineKeyboardButton(" Friend", callback_data="rel_friend")],
+        [InlineKeyboardButton(" Colleague", callback_data="rel_colleague")],
+        [InlineKeyboardButton(" Partner", callback_data="rel_partner")],
+        [InlineKeyboardButton(" Custom", callback_data="rel_custom")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
@@ -86,8 +83,8 @@ async def addbirthday_relation_callback(update: Update, context: ContextTypes.DE
     context.user_data['birthday_relation'] = relation
     
     await query.edit_message_text(
-        f"✅ Relation: {relation.capitalize()}\n\n"
-        f"📅 When is {context.user_data['birthday_name']}'s birthday?\n\n"
+        f" Relation: {relation.capitalize()}\n\n"
+        f" When is {context.user_data['birthday_name']}'s birthday?\n\n"
         f"Format: DD-MM or DD/MM\n"
         f"Examples: 25-12, 15/08\n\n"
         f"Send /cancel to cancel."
@@ -100,8 +97,8 @@ async def addbirthday_relation_text(update: Update, context: ContextTypes.DEFAUL
     context.user_data['birthday_relation'] = update.message.text.strip()
     
     await update.message.reply_text(
-        f"✅ Relation: {context.user_data['birthday_relation']}\n\n"
-        f"📅 When is {context.user_data['birthday_name']}'s birthday?\n\n"
+        f" Relation: {context.user_data['birthday_relation']}\n\n"
+        f" When is {context.user_data['birthday_name']}'s birthday?\n\n"
         f"Format: DD-MM or DD/MM\n"
         f"Examples: 25-12, 15/08\n\n"
         f"Send /cancel to cancel."
@@ -138,7 +135,7 @@ async def addbirthday_date(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await update.message.reply_text(
-            f"🗣️ **Select Wish Language**\n\n"
+            f" **Select Wish Language**\n\n"
             f"Which language should birthday wishes be in for {context.user_data['birthday_name']}?",
             reply_markup=reply_markup,
             parse_mode='Markdown'
@@ -147,7 +144,7 @@ async def addbirthday_date(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
     except Exception as e:
         await update.message.reply_text(
-            "❌ Invalid date format!\n\n"
+            " Invalid date format!\n\n"
             "Please use DD-MM or DD/MM\n"
             "Examples: 25-12, 15/08\n\n"
             "Send /cancel to cancel."
@@ -182,12 +179,12 @@ async def addbirthday_language(update: Update, context: ContextTypes.DEFAULT_TYP
         lang_name = LANGUAGES.get(lang_code, 'English')
         
         await query.edit_message_text(
-            f"✅ **Birthday Added!**\n\n"
-            f"👤 {birthday.person_name}\n"
-            f"🔗 {birthday.relation.capitalize()}\n"
-            f"📅 {birthday.birthday_date.strftime('%B %d')}\n"
-            f"🗣️ Wishes in {lang_name}\n\n"
-            f"You'll receive automatic wishes on their birthday! 🎉",
+            f" **Birthday Added!**\n\n"
+            f" {birthday.person_name}\n"
+            f" {birthday.relation.capitalize()}\n"
+            f" {birthday.birthday_date.strftime('%B %d')}\n"
+            f" Wishes in {lang_name}\n\n"
+            f"You'll receive automatic wishes on their birthday! ",
             parse_mode='Markdown'
         )
         
@@ -196,7 +193,7 @@ async def addbirthday_language(update: Update, context: ContextTypes.DEFAULT_TYP
         
     except Exception as e:
         logger.error(f"Failed to add birthday: {e}")
-        await query.edit_message_text("❌ Failed to save birthday. Please try again.")
+        await query.edit_message_text(" Failed to save birthday. Please try again.")
         context.user_data.clear()
         return ConversationHandler.END
     finally:
@@ -206,14 +203,11 @@ async def addbirthday_language(update: Update, context: ContextTypes.DEFAULT_TYP
 async def addbirthday_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Cancel birthday addition."""
     context.user_data.clear()
-    await update.message.reply_text("❌ Birthday addition cancelled.")
+    await update.message.reply_text(" Birthday addition cancelled.")
     return ConversationHandler.END
 
 
-# ==========================================
 # LIST BIRTHDAYS
-# ==========================================
-
 async def listbirthdays_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """List all saved birthdays."""
     user = update.effective_user
@@ -225,7 +219,7 @@ async def listbirthdays_command(update: Update, context: ContextTypes.DEFAULT_TY
         
         if not birthdays:
             await update.message.reply_text(
-                "📭 No birthdays saved yet!\n\n"
+                " No birthdays saved yet!\n\n"
                 "Use /addbirthday to add one."
             )
             return
@@ -234,23 +228,23 @@ async def listbirthdays_command(update: Update, context: ContextTypes.DEFAULT_TY
         upcoming = [b for b in birthdays if b.is_birthday_soon(30)]
         all_birthdays = birthdays
         
-        message = "🎂 **Your Birthdays**\n\n"
+        message = " **Your Birthdays**\n\n"
         
         if upcoming:
-            message += "**📅 Upcoming (Next 30 Days):**\n"
+            message += "** Upcoming (Next 30 Days):**\n"
             for b in upcoming:
                 days = b.days_until_birthday()
                 lang = b.get_language_name()
                 message += (
                     f"• {b.person_name} ({b.relation})\n"
                     f"  {b.birthday_date.strftime('%B %d')} - {days} days away\n"
-                    f"  🗣️ {lang}\n\n"
+                    f"   {lang}\n\n"
                 )
         
-        message += f"\n**📋 All Birthdays ({len(all_birthdays)}):**\n"
+        message += f"\n** All Birthdays ({len(all_birthdays)}):**\n"
         for b in all_birthdays[:10]:  # Show first 10
             lang = b.get_language_name()
-            message += f"• {b.person_name} ({b.relation}) - {b.birthday_date.strftime('%B %d')} - 🗣️ {lang}\n"
+            message += f"• {b.person_name} ({b.relation}) - {b.birthday_date.strftime('%B %d')} -  {lang}\n"
         
         if len(all_birthdays) > 10:
             message += f"\n... and {len(all_birthdays) - 10} more"
@@ -263,10 +257,7 @@ async def listbirthdays_command(update: Update, context: ContextTypes.DEFAULT_TY
         db.close()
 
 
-# ==========================================
 # DELETE BIRTHDAY
-# ==========================================
-
 async def deletebirthday_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Delete a birthday by name."""
     user = update.effective_user
@@ -274,7 +265,7 @@ async def deletebirthday_command(update: Update, context: ContextTypes.DEFAULT_T
     
     if not context.args:
         await update.message.reply_text(
-            "❌ Please provide a name.\n\n"
+            " Please provide a name.\n\n"
             "Example: /deletebirthday John"
         )
         return
@@ -289,14 +280,14 @@ async def deletebirthday_command(update: Update, context: ContextTypes.DEFAULT_T
         ).first()
         
         if not birthday:
-            await update.message.reply_text(f"❌ No birthday found for '{name_to_delete}'")
+            await update.message.reply_text(f" No birthday found for '{name_to_delete}'")
             return
         
         name = birthday.person_name
         db.delete(birthday)
         db.commit()
         
-        await update.message.reply_text(f"🗑️ Deleted birthday for {name}")
+        await update.message.reply_text(f" Deleted birthday for {name}")
         
     finally:
         db.close()

@@ -64,4 +64,4 @@ def drop_db() -> None:
     Use with caution - deletes all data!
     """
     Base.metadata.drop_all(bind=engine)
-    logger.warning("⚠️ All database tables dropped!")
+    logger.warning(" All database tables dropped!")

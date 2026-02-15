@@ -43,10 +43,10 @@ def create_default_user():
         
         db.add(default_user)
         db.commit()
-        logger.info("✅ Default user created successfully!")
+        logger.info(" Default user created successfully!")
         
     except Exception as e:
-        logger.error(f"❌ Error creating default user: {e}")
+        logger.error(f" Error creating default user: {e}")
         db.rollback()
     finally:
         db.close()
@@ -54,7 +54,7 @@ def create_default_user():
 
 def main():
     """Main setup function."""
-    logger.info("🚀 Initializing database...")
+    logger.info(" Initializing database...")
     
     try:
         # Create tables
@@ -63,11 +63,11 @@ def main():
         # Create default user
         create_default_user()
         
-        logger.info("✅ Database setup completed successfully!")
+        logger.info(" Database setup completed successfully!")
         logger.info("You can now run: uvicorn app.main:app --reload")
         
     except Exception as e:
-        logger.error(f"❌ Database setup failed: {e}")
+        logger.error(f" Database setup failed: {e}")
         sys.exit(1)
 
 

@@ -74,7 +74,7 @@ Be creative, warm, and culturally sensitive.
         if not date:
             date = datetime.utcnow()
         
-        logger.info(f"🎊 Checking festivals for {date.strftime('%B %d, %Y')} in {countries}")
+        logger.info(f" Checking festivals for {date.strftime('%B %d, %Y')} in {countries}")
         
         try:
             # Ask LLM about festivals
@@ -102,17 +102,17 @@ Include major festivals only. If no festivals, return empty array [].
             if result['success']:
                 festivals = result['data']
                 if isinstance(festivals, list):
-                    logger.info(f"✅ Found {len(festivals)} festivals today")
+                    logger.info(f" Found {len(festivals)} festivals today")
                     return festivals
                 else:
-                    logger.warning("⚠️ Invalid festival response format")
+                    logger.warning(" Invalid festival response format")
                     return []
             else:
-                logger.error("❌ Festival detection failed")
+                logger.error(" Festival detection failed")
                 return []
                 
         except Exception as e:
-            logger.error(f"❌ Festival check failed: {e}")
+            logger.error(f" Festival check failed: {e}")
             return []
     
     async def generate_birthday_wish(
@@ -134,7 +134,7 @@ Include major festivals only. If no festivals, return empty array [].
         Returns:
             Personalized birthday wish with image prompt
         """
-        logger.info(f"🎂 Generating birthday wish for {name} ({relation})")
+        logger.info(f" Generating birthday wish for {name} ({relation})")
         
         try:
             # Build context
@@ -163,7 +163,7 @@ The message should be appropriate for a {relation} and feel genuine, not generic
             
             if result['success']:
                 wish = result['data']
-                logger.info(f"✅ Generated birthday wish for {name}")
+                logger.info(f" Generated birthday wish for {name}")
                 return {
                     'success': True,
                     'person': name,
@@ -174,7 +174,7 @@ The message should be appropriate for a {relation} and feel genuine, not generic
                 return self._fallback_birthday_wish(name, relation)
                 
         except Exception as e:
-            logger.error(f"❌ Birthday wish generation failed: {e}")
+            logger.error(f" Birthday wish generation failed: {e}")
             return self._fallback_birthday_wish(name, relation)
     
     async def generate_festival_greeting(
@@ -194,7 +194,7 @@ The message should be appropriate for a {relation} and feel genuine, not generic
         Returns:
             Festival greeting with image prompt
         """
-        logger.info(f"🎉 Generating greeting for {festival_name} ({country})")
+        logger.info(f" Generating greeting for {festival_name} ({country})")
         
         try:
             prompt = f"""
@@ -216,7 +216,7 @@ Be respectful and capture the spirit of the celebration.
             
             if result['success']:
                 greeting = result['data']
-                logger.info(f"✅ Generated greeting for {festival_name}")
+                logger.info(f" Generated greeting for {festival_name}")
                 return {
                     'success': True,
                     'festival': festival_name,
@@ -227,7 +227,7 @@ Be respectful and capture the spirit of the celebration.
                 return self._fallback_festival_greeting(festival_name, country)
                 
         except Exception as e:
-            logger.error(f"❌ Festival greeting generation failed: {e}")
+            logger.error(f" Festival greeting generation failed: {e}")
             return self._fallback_festival_greeting(festival_name, country)
     
     async def generate_celebration_image(
@@ -245,18 +245,18 @@ Be respectful and capture the spirit of the celebration.
         Returns:
             Image URL or None if generation fails
         """
-        logger.info(f"🎨 Generating {celebration_type} image...")
+        logger.info(f" Generating {celebration_type} image...")
         
         # TODO: Integrate with Stable Diffusion API or similar
         # For now, return placeholder
-        logger.warning("⚠️ Image generation not implemented yet")
+        logger.warning(" Image generation not implemented yet")
         
         # Placeholder for future implementation:
         # try:
         #     response = await stability_ai.generate_image(prompt=image_prompt)
         #     return response['image_url']
         # except Exception as e:
-        #     logger.error(f"❌ Image generation failed: {e}")
+        #     logger.error(f" Image generation failed: {e}")
         #     return None
         
         return None
@@ -265,15 +265,15 @@ Be respectful and capture the spirit of the celebration.
         """Simple fallback birthday wish."""
         
         relation_messages = {
-            'friend': f"Happy Birthday, {name}! 🎉 Wishing you an amazing year ahead filled with joy and success!",
-            'family': f"Happy Birthday, {name}! 🎂 May this year bring you happiness, health, and all your heart desires!",
-            'colleague': f"Happy Birthday, {name}! 🎈 Wishing you a wonderful day and continued success!",
-            'wife': f"Happy Birthday to my amazing {name}! ❤️ You make every day special. Here's to another beautiful year together!",
-            'husband': f"Happy Birthday to my wonderful {name}! ❤️ Thank you for being you. Cheers to many more!",
-            'parent': f"Happy Birthday, {name}! 🌟 Thank you for everything. Wishing you health and happiness always!"
+            'friend': f"Happy Birthday, {name}!  Wishing you an amazing year ahead filled with joy and success!",
+            'family': f"Happy Birthday, {name}!  May this year bring you happiness, health, and all your heart desires!",
+            'colleague': f"Happy Birthday, {name}!  Wishing you a wonderful day and continued success!",
+            'wife': f"Happy Birthday to my amazing {name}!  You make every day special. Here's to another beautiful year together!",
+            'husband': f"Happy Birthday to my wonderful {name}!  Thank you for being you. Cheers to many more!",
+            'parent': f"Happy Birthday, {name}!  Thank you for everything. Wishing you health and happiness always!"
         }
         
-        message = relation_messages.get(relation.lower(), f"Happy Birthday, {name}! 🎉 Have a fantastic day!")
+        message = relation_messages.get(relation.lower(), f"Happy Birthday, {name}!  Have a fantastic day!")
         
         return {
             'success': True,
@@ -281,19 +281,19 @@ Be respectful and capture the spirit of the celebration.
             'relation': relation,
             'message': message,
             'image_prompt': f"Colorful birthday celebration with cake, balloons, and confetti",
-            'emoji': "🎂"
+            'emoji': ""
         }
     
     def _fallback_festival_greeting(self, festival_name: str, country: str) -> Dict[str, Any]:
         """Simple fallback festival greeting."""
         
         festival_messages = {
-            'christmas': "Merry Christmas! 🎄 Wishing you joy, peace, and wonderful memories!",
+            'christmas': "Merry Christmas!  Wishing you joy, peace, and wonderful memories!",
             'diwali': "Happy Diwali! 🪔 May the festival of lights bring prosperity and happiness!",
-            'eid': "Eid Mubarak! 🌙 Wishing you and your family a blessed celebration!",
-            'holi': "Happy Holi! 🎨 May your life be filled with vibrant colors and joy!",
-            'thanksgiving': "Happy Thanksgiving! 🦃 Grateful for you and wishing you a wonderful day!",
-            'new year': "Happy New Year! 🎊 Wishing you success and happiness in the year ahead!"
+            'eid': "Eid Mubarak!  Wishing you and your family a blessed celebration!",
+            'holi': "Happy Holi!  May your life be filled with vibrant colors and joy!",
+            'thanksgiving': "Happy Thanksgiving!  Grateful for you and wishing you a wonderful day!",
+            'new year': "Happy New Year!  Wishing you success and happiness in the year ahead!"
         }
         
         # Try to match festival name
@@ -304,7 +304,7 @@ Be respectful and capture the spirit of the celebration.
                 break
         
         if not message:
-            message = f"Happy {festival_name}! 🎉 Wishing you joy and celebration!"
+            message = f"Happy {festival_name}!  Wishing you joy and celebration!"
         
         return {
             'success': True,
@@ -312,7 +312,7 @@ Be respectful and capture the spirit of the celebration.
             'country': country,
             'message': message,
             'image_prompt': f"{festival_name} celebration with traditional decorations and joy",
-            'emoji': "🎉"
+            'emoji': ""
         }
 
 

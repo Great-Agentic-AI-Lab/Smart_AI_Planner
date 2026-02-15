@@ -116,7 +116,7 @@ async def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
         try:
             # Check if API key is available before calling LLM
             if not settings.google_api_key:
-                logger.warning("⚠️ GOOGLE_API_KEY not set, skipping AI prioritization")
+                logger.warning(" GOOGLE_API_KEY not set, skipping AI prioritization")
                 ai_reasoning = "AI unavailable: GOOGLE_API_KEY not configured"
             else:
                 # Retry up to 3 times
@@ -135,20 +135,20 @@ async def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
                             task.priority_score = result['priority_score']
                             task.estimated_effort_minutes = result['estimated_effort_minutes']
                             ai_reasoning = result['reasoning']
-                            logger.info(f"✅ AI analysis succeeded on attempt {retry_count + 1}")
+                            logger.info(f" AI analysis succeeded on attempt {retry_count + 1}")
                             db.commit()
                             db.refresh(task)
                             break  # Success - exit retry loop
                         else:
                             ai_reasoning = f"AI analysis failed: {result.get('error')}"
-                            logger.warning(f"⚠️ AI analysis failed: {ai_reasoning}")
+                            logger.warning(f" AI analysis failed: {ai_reasoning}")
                             break  # Fail - don't retry
 
                     except asyncio.TimeoutError:
                         retry_count += 1
-                        logger.warning(f"⚠️ Attempt {retry_count} timed out")
+                        logger.warning(f" Attempt {retry_count} timed out")
                         if retry_count >= max_retries:
-                            logger.error(f"❌ AI prioritization failed after {max_retries} retries (timeout)")
+                            logger.error(f" AI prioritization failed after {max_retries} retries (timeout)")
                             ai_reasoning = f"AI unavailable after {max_retries} retries (timeout)"
                         else:
                             logger.info(f"Retrying in 2 seconds...")
@@ -156,16 +156,16 @@ async def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
 
                     except Exception as e:
                         retry_count += 1
-                        logger.warning(f"⚠️ Attempt {retry_count} failed: {e}")
+                        logger.warning(f" Attempt {retry_count} failed: {e}")
                         if retry_count >= max_retries:
-                            logger.error(f"❌ AI prioritization failed after {max_retries} retries")
+                            logger.error(f" AI prioritization failed after {max_retries} retries")
                             ai_reasoning = f"AI unavailable after {max_retries} retries: {str(e)}"
                         else:
                             logger.info(f"Retrying in 2 seconds...")
                             await asyncio.sleep(2)
 
         except Exception as e:
-            logger.error(f"❌ AI prioritization outer exception: {e}")
+            logger.error(f" AI prioritization outer exception: {e}")
             task.priority = PriorityEnum.MEDIUM
             task.priority_score = 50
             ai_reasoning = f"AI unavailable: {str(e)}"
@@ -176,7 +176,7 @@ async def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
         try:
             await on_task_created(task)
         except Exception as e:
-            logger.warning(f"⚠️ Failed to store embedding: {e}")
+            logger.warning(f" Failed to store embedding: {e}")
 
         # Build response - validator will handle tags conversion
         response = TaskResponse.from_orm(task)
@@ -184,7 +184,7 @@ async def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
         return response
 
     except Exception as e:
-        logger.error(f"❌ Task creation failed: {e}")
+        logger.error(f" Task creation failed: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -238,20 +238,20 @@ async def update_task(task_id: int, task_data: TaskUpdate, db: Session = Depends
             try:
                 await on_task_created(task)
             except Exception as e:
-                logger.warning(f"⚠️ Failed to update embedding: {e}")
+                logger.warning(f" Failed to update embedding: {e}")
 
         # Update completion metadata if completed
         if task.status == TaskStatusEnum.COMPLETED and not was_completed:
             try:
                 await on_task_completed(task)
             except Exception as e:
-                logger.warning(f"⚠️ Failed to update completion: {e}")
+                logger.warning(f" Failed to update completion: {e}")
 
         response = TaskResponse.from_orm(task)
         return response
 
     except Exception as e:
-        logger.error(f"❌ Task update failed: {e}")
+        logger.error(f" Task update failed: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -272,14 +272,14 @@ async def delete_task(task_id: int, db: Session = Depends(get_db)):
         try:
             await on_task_deleted(task_id)
         except Exception as e:
-            logger.warning(f"⚠️ Failed to delete embedding: {e}")
+            logger.warning(f" Failed to delete embedding: {e}")
 
         db.delete(task)
         db.commit()
         return None
 
     except Exception as e:
-        logger.error(f"❌ Task deletion failed: {e}")
+        logger.error(f" Task deletion failed: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -309,7 +309,7 @@ def list_tasks(
         return [TaskResponse.from_orm(task) for task in tasks]
 
     except Exception as e:
-        logger.error(f"❌ Failed to list tasks: {e}")
+        logger.error(f" Failed to list tasks: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -344,7 +344,7 @@ async def get_suggestion(user_id: int = 1, db: Session = Depends(get_db)):
             return {
                 'success': True,
                 'recommended_task_id': None,
-                'reasoning': 'No pending tasks! You\'re all done! 🎉',
+                'reasoning': 'No pending tasks! You\'re all done! ',
                 'alternative_tasks': [],
                 'productivity_tip': 'Take a break or plan new goals!'
             }
@@ -372,5 +372,5 @@ async def get_suggestion(user_id: int = 1, db: Session = Depends(get_db)):
         return result
 
     except Exception as e:
-        logger.error(f"❌ Suggestion failed: {e}")
+        logger.error(f" Suggestion failed: {e}")
         raise HTTPException(status_code=500, detail=f"Suggestion failed: {str(e)}")

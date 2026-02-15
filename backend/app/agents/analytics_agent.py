@@ -70,7 +70,7 @@ Be encouraging, data-driven, and actionable. Help users improve without being ju
         Returns:
             Comprehensive productivity report with insights
         """
-        logger.info(f"📊 Generating {period_days}-day analytics report...")
+        logger.info(f" Generating {period_days}-day analytics report...")
         
         try:
             # Calculate statistics
@@ -84,7 +84,7 @@ Be encouraging, data-driven, and actionable. Help users improve without being ju
             
             if result['success']:
                 insights = result['data']
-                logger.info(f"✅ Generated analytics: {insights.get('overall_score')}/100")
+                logger.info(f" Generated analytics: {insights.get('overall_score')}/100")
                 return {
                     'success': True,
                     'period_days': period_days,
@@ -95,7 +95,7 @@ Be encouraging, data-driven, and actionable. Help users improve without being ju
                 return self._fallback_report(stats, period_days)
                 
         except Exception as e:
-            logger.error(f"❌ Analytics generation failed: {e}")
+            logger.error(f" Analytics generation failed: {e}")
             return self._fallback_report({}, period_days)
     
     async def get_productivity_insights(
@@ -113,7 +113,7 @@ Be encouraging, data-driven, and actionable. Help users improve without being ju
         Returns:
             Quick insights and tips
         """
-        logger.info(f"💡 Generating productivity insights for user {user_id}")
+        logger.info(f" Generating productivity insights for user {user_id}")
         
         try:
             # Analyze patterns
@@ -144,7 +144,7 @@ Provide 3 quick insights and 2 actionable tips to improve productivity.
                 }
                 
         except Exception as e:
-            logger.error(f"❌ Insights generation failed: {e}")
+            logger.error(f" Insights generation failed: {e}")
             return {
                 'success': False,
                 'error': str(e)
@@ -324,15 +324,15 @@ Provide:
         if completion_rate >= 70:
             score = 80
             trend = "improving"
-            celebration = "🎉 Excellent work! You're crushing it!"
+            celebration = " Excellent work! You're crushing it!"
         elif completion_rate >= 40:
             score = 60
             trend = "stable"
-            celebration = "👍 Good progress! Keep it up!"
+            celebration = " Good progress! Keep it up!"
         else:
             score = 40
             trend = "needs_attention"
-            celebration = "💪 Every task completed is progress!"
+            celebration = " Every task completed is progress!"
         
         return {
             'success': True,

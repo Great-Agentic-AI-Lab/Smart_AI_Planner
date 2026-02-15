@@ -26,15 +26,15 @@ BIRTHDAY_NAME, BIRTHDAY_RELATION, BIRTHDAY_DATE, BIRTHDAY_LANGUAGE = range(4)
 # Available options
 COUNTRIES = ["India", "USA", "UK", "Canada", "Australia", "Germany", "France", "Japan"]
 LANGUAGES = {
-    'en': '🇬🇧 English',
-    'hi': '🇮🇳 Hindi',
-    'mr': '🇮🇳 Marathi',
-    'es': '🇪🇸 Spanish',
-    'fr': '🇫🇷 French',
-    'de': '🇩🇪 German',
-    'ar': '🇸🇦 Arabic',
-    'zh': '🇨🇳 Chinese',
-    'ja': '🇯🇵 Japanese'
+    'en': ' English',
+    'hi': ' Hindi',
+    'mr': ' Marathi',
+    'es': ' Spanish',
+    'fr': ' French',
+    'de': ' German',
+    'ar': ' Arabic',
+    'zh': ' Chinese',
+    'ja': ' Japanese'
 }
 TIMEZONES = {
     'UTC': 'UTC (London)',
@@ -47,10 +47,7 @@ TIMEZONES = {
 }
 
 
-# ==========================================
 # VIEW SETTINGS
-# ==========================================
-
 async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Show all current settings."""
     user = update.effective_user
@@ -69,20 +66,20 @@ async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         # Format settings
         countries = ', '.join(prefs.festival_countries) if prefs.festival_countries else 'None selected'
-        lang_name = LANGUAGES.get(prefs.language, '🇬🇧 English')
+        lang_name = LANGUAGES.get(prefs.language, ' English')
         tz_name = TIMEZONES.get(prefs.timezone, prefs.timezone)
         msg_time = prefs.daily_digest_time.strftime('%I:%M %p') if prefs.daily_digest_time else '09:00 AM'
         
         message = (
-            f"⚙️ **Your Settings**\n\n"
-            f"🌍 **Festival Countries:** {countries}\n"
-            f"🕐 **Timezone:** {tz_name}\n"
-            f"⏰ **Daily Message Time:** {msg_time}\n"
-            f"🗣️ **Language:** {lang_name}\n\n"
-            f"🎂 **Birthday Wishes:** {'✅ Enabled' if prefs.auto_send_birthday_wishes else '❌ Disabled'}\n"
-            f"🎉 **Festival Greetings:** {'✅ Enabled' if prefs.auto_send_festival_wishes else '❌ Disabled'}\n"
-            f"📬 **Task Reminders:** {'✅ Enabled' if prefs.enable_task_reminders else '❌ Disabled'}\n"
-            f"📊 **Daily Digest:** {'✅ Enabled' if prefs.enable_daily_digest else '❌ Disabled'}\n\n"
+            f" **Your Settings**\n\n"
+            f" **Festival Countries:** {countries}\n"
+            f" **Timezone:** {tz_name}\n"
+            f" **Daily Message Time:** {msg_time}\n"
+            f" **Language:** {lang_name}\n\n"
+            f" **Birthday Wishes:** {' Enabled' if prefs.auto_send_birthday_wishes else ' Disabled'}\n"
+            f" **Festival Greetings:** {' Enabled' if prefs.auto_send_festival_wishes else ' Disabled'}\n"
+            f" **Task Reminders:** {' Enabled' if prefs.enable_task_reminders else ' Disabled'}\n"
+            f" **Daily Digest:** {' Enabled' if prefs.enable_daily_digest else ' Disabled'}\n\n"
             f"**Commands:**\n"
             f"/setcountries - Choose festival countries\n"
             f"/settimezone - Set timezone\n"
@@ -98,10 +95,7 @@ async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         db.close()
 
 
-# ==========================================
 # SET COUNTRIES
-# ==========================================
-
 async def setcountries_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Interactive country selection (up to 4)."""
     user = update.effective_user
@@ -121,18 +115,18 @@ async def setcountries_command(update: Update, context: ContextTypes.DEFAULT_TYP
         # Create keyboard with country options
         keyboard = []
         for country in COUNTRIES:
-            emoji = "✅" if country in selected else "⬜"
+            emoji = "" if country in selected else "⬜"
             keyboard.append([InlineKeyboardButton(
                 f"{emoji} {country}",
                 callback_data=f"country_{country}"
             )])
         
-        keyboard.append([InlineKeyboardButton("✅ Done", callback_data="country_done")])
+        keyboard.append([InlineKeyboardButton(" Done", callback_data="country_done")])
         
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         message = (
-            f"🌍 **Select Festival Countries** (max 4)\n\n"
+            f" **Select Festival Countries** (max 4)\n\n"
             f"Currently selected: {len(selected)}/4\n"
             f"{', '.join(selected) if selected else 'None'}\n\n"
             f"Tap countries to add/remove:"
@@ -155,7 +149,7 @@ async def country_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     action = query.data.replace('country_', '')
     
     if action == "done":
-        await query.edit_message_text("✅ Festival countries updated!")
+        await query.edit_message_text(" Festival countries updated!")
         return
     
     db = SessionLocal()
@@ -169,7 +163,7 @@ async def country_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif len(selected) < 4:
             selected.append(action)
         else:
-            await query.answer("❌ Maximum 4 countries!", show_alert=True)
+            await query.answer(" Maximum 4 countries!", show_alert=True)
             return
         
         prefs.festival_countries = selected
@@ -178,17 +172,17 @@ async def country_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Update keyboard
         keyboard = []
         for country in COUNTRIES:
-            emoji = "✅" if country in selected else "⬜"
+            emoji = "" if country in selected else "⬜"
             keyboard.append([InlineKeyboardButton(
                 f"{emoji} {country}",
                 callback_data=f"country_{country}"
             )])
         
-        keyboard.append([InlineKeyboardButton("✅ Done", callback_data="country_done")])
+        keyboard.append([InlineKeyboardButton(" Done", callback_data="country_done")])
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         message = (
-            f"🌍 **Select Festival Countries** (max 4)\n\n"
+            f" **Select Festival Countries** (max 4)\n\n"
             f"Currently selected: {len(selected)}/4\n"
             f"{', '.join(selected) if selected else 'None'}\n\n"
             f"Tap countries to add/remove:"
@@ -200,10 +194,7 @@ async def country_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         db.close()
 
 
-# ==========================================
 # SET TIMEZONE
-# ==========================================
-
 async def settimezone_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Select timezone."""
     keyboard = []
@@ -213,7 +204,7 @@ async def settimezone_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await update.message.reply_text(
-        "🕐 **Select Your Timezone:**",
+        " **Select Your Timezone:**",
         reply_markup=reply_markup,
         parse_mode='Markdown'
     )
@@ -240,16 +231,13 @@ async def timezone_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         db.commit()
         
         tz_name = TIMEZONES.get(tz_code, tz_code)
-        await query.edit_message_text(f"✅ Timezone set to: {tz_name}")
+        await query.edit_message_text(f" Timezone set to: {tz_name}")
         
     finally:
         db.close()
 
 
-# ==========================================
 # SET LANGUAGE
-# ==========================================
-
 async def setlanguage_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Select default language."""
     keyboard = []
@@ -259,7 +247,7 @@ async def setlanguage_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await update.message.reply_text(
-        "🗣️ **Select Your Language:**\n\n"
+        " **Select Your Language:**\n\n"
         "This will be the default language for all messages.\n"
         "You can still set different languages for individual birthdays.",
         reply_markup=reply_markup,
@@ -288,20 +276,18 @@ async def language_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         db.commit()
         
         lang_name = LANGUAGES.get(lang_code, 'English')
-        await query.edit_message_text(f"✅ Language set to: {lang_name}")
+        await query.edit_message_text(f" Language set to: {lang_name}")
         
     finally:
         db.close()
 
 
-# ==========================================
-# SET MESSAGE TIME
-# ==========================================
 
+# SET MESSAGE TIME
 async def settime_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Set time for daily messages."""
     await update.message.reply_text(
-        "⏰ **Set Daily Message Time**\n\n"
+        " **Set Daily Message Time**\n\n"
         "Send time in 24-hour format.\n"
         "Examples:\n"
         "• 09:00 (9 AM)\n"
@@ -335,7 +321,7 @@ async def settime_receive(update: Update, context: ContextTypes.DEFAULT_TYPE):
             db.commit()
             
             await update.message.reply_text(
-                f"✅ Daily messages will be sent at {msg_time.strftime('%I:%M %p')} ({prefs.timezone})"
+                f" Daily messages will be sent at {msg_time.strftime('%I:%M %p')} ({prefs.timezone})"
             )
             
         finally:
@@ -345,17 +331,14 @@ async def settime_receive(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
     except:
         await update.message.reply_text(
-            "❌ Invalid time format!\n\n"
+            " Invalid time format!\n\n"
             "Please use HH:MM format (e.g., 09:00)\n"
             "Send /cancel to cancel."
         )
         return "AWAITING_TIME"
 
 
-# ==========================================
 # TOGGLE FEATURES
-# ==========================================
-
 async def toggle_birthdays(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Toggle birthday wishes on/off."""
     user = update.effective_user
@@ -371,8 +354,8 @@ async def toggle_birthdays(update: Update, context: ContextTypes.DEFAULT_TYPE):
         prefs.auto_send_birthday_wishes = not prefs.auto_send_birthday_wishes
         db.commit()
         
-        status = "✅ Enabled" if prefs.auto_send_birthday_wishes else "❌ Disabled"
-        await update.message.reply_text(f"🎂 Birthday wishes: {status}")
+        status = " Enabled" if prefs.auto_send_birthday_wishes else " Disabled"
+        await update.message.reply_text(f" Birthday wishes: {status}")
         
     finally:
         db.close()
@@ -393,8 +376,8 @@ async def toggle_festivals(update: Update, context: ContextTypes.DEFAULT_TYPE):
         prefs.auto_send_festival_wishes = not prefs.auto_send_festival_wishes
         db.commit()
         
-        status = "✅ Enabled" if prefs.auto_send_festival_wishes else "❌ Disabled"
-        await update.message.reply_text(f"🎉 Festival greetings: {status}")
+        status = " Enabled" if prefs.auto_send_festival_wishes else " Disabled"
+        await update.message.reply_text(f" Festival greetings: {status}")
         
     finally:
         db.close()

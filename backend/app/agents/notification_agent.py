@@ -64,7 +64,7 @@ Be supportive and positive. Help users stay on track without stress.
         Returns:
             Reminder message with urgency and suggested action
         """
-        logger.info(f"📬 Generating {reminder_type} reminder for task {task.get('id')}")
+        logger.info(f" Generating {reminder_type} reminder for task {task.get('id')}")
         
         try:
             # Build context-aware prompt
@@ -75,7 +75,7 @@ Be supportive and positive. Help users stay on track without stress.
             
             if result['success']:
                 notification = result['data']
-                logger.info(f"✅ Generated reminder: {notification.get('message')[:50]}...")
+                logger.info(f" Generated reminder: {notification.get('message')[:50]}...")
                 return {
                     'success': True,
                     **notification
@@ -84,7 +84,7 @@ Be supportive and positive. Help users stay on track without stress.
                 return self._fallback_reminder(task, reminder_type)
                 
         except Exception as e:
-            logger.error(f"❌ Reminder generation failed: {e}")
+            logger.error(f" Reminder generation failed: {e}")
             return self._fallback_reminder(task, reminder_type)
     
     async def generate_daily_digest(
@@ -102,7 +102,7 @@ Be supportive and positive. Help users stay on track without stress.
         Returns:
             Daily digest message with task summary and motivation
         """
-        logger.info("📊 Generating daily digest...")
+        logger.info(" Generating daily digest...")
         
         try:
             # Categorize tasks
@@ -118,7 +118,7 @@ Be supportive and positive. Help users stay on track without stress.
             
             if result['success']:
                 digest = result['data']
-                logger.info("✅ Generated daily digest")
+                logger.info(" Generated daily digest")
                 return {
                     'success': True,
                     **digest,
@@ -132,7 +132,7 @@ Be supportive and positive. Help users stay on track without stress.
                 return self._fallback_digest(overdue, today, upcoming)
                 
         except Exception as e:
-            logger.error(f"❌ Digest generation failed: {e}")
+            logger.error(f" Digest generation failed: {e}")
             return self._fallback_digest([], [], [])
     
     def _build_reminder_prompt(self, task: Dict[str, Any], reminder_type: str) -> str:
@@ -282,9 +282,9 @@ Generate:
         title = task.get('title', 'Your task')
         
         messages = {
-            'upcoming': f"⏰ Reminder: {title} is coming up soon!",
-            'overdue': f"🚨 {title} is overdue. Please complete it ASAP!",
-            'today': f"📅 {title} is due today. Time to work on it!",
+            'upcoming': f" Reminder: {title} is coming up soon!",
+            'overdue': f" {title} is overdue. Please complete it ASAP!",
+            'today': f" {title} is due today. Time to work on it!",
             'digest': "Good morning! You have pending tasks to review."
         }
         

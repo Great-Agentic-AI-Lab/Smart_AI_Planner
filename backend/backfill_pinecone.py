@@ -17,12 +17,12 @@ from app.vectordb.task_hooks import on_task_created
 
 async def backfill_embeddings():
     """Add embeddings for all existing tasks to Pinecone."""
-    print("🔄 Starting Pinecone backfill...")
+    print(" Starting Pinecone backfill...")
     
     db = SessionLocal()
     try:
         tasks = db.query(Task).all()
-        print(f"📊 Found {len(tasks)} tasks in database")
+        print(f" Found {len(tasks)} tasks in database")
         
         success_count = 0
         for i, task in enumerate(tasks, 1):
@@ -32,17 +32,17 @@ async def backfill_embeddings():
                 result = await on_task_created(task)
                 if result:
                     success_count += 1
-                    print(f"  ✅ Stored embedding for task {task.id}")
+                    print(f"   Stored embedding for task {task.id}")
                 else:
-                    print(f"  ⚠️ Failed to store embedding for task {task.id}")
+                    print(f"   Failed to store embedding for task {task.id}")
             except Exception as e:
-                print(f"  ❌ Error: {e}")
+                print(f"   Error: {e}")
         
-        print(f"\n✅ Backfill complete!")
-        print(f"📊 Success: {success_count}/{len(tasks)} tasks")
+        print(f"\n Backfill complete!")
+        print(f" Success: {success_count}/{len(tasks)} tasks")
         
     except Exception as e:
-        print(f"❌ Backfill failed: {e}")
+        print(f" Backfill failed: {e}")
         raise
     finally:
         db.close()
@@ -50,7 +50,7 @@ async def backfill_embeddings():
 
 async def check_pinecone_stats():
     """Check Pinecone stats after backfill."""
-    print("\n🔍 Checking Pinecone stats...")
+    print("\n Checking Pinecone stats...")
     
     try:
         from app.vectordb import get_pinecone_client
@@ -58,13 +58,13 @@ async def check_pinecone_stats():
         client = get_pinecone_client()
         stats = await client.get_stats()
         
-        print(f"\n📊 Pinecone Stats:")
+        print(f"\n Pinecone Stats:")
         print(f"  Total vectors: {stats.get('total_vectors', 0)}")
         print(f"  Dimension: {stats.get('dimension', 0)}")
         print(f"  Index fullness: {stats.get('index_fullness', 0):.4f}")
         
     except Exception as e:
-        print(f"⚠️ Could not check stats: {e}")
+        print(f" Could not check stats: {e}")
 
 
 async def main():
