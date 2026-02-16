@@ -1,5 +1,5 @@
 """
-Telegram Bot - COMPLETE VERSION
+Telegram Bot - COMPLETE VERSION - ALL EMOJIS FIXED
 Includes: Tasks, Edit, Complete, Postpone, Settings, Birthdays, All Features
 """
 
@@ -26,18 +26,52 @@ from app.vectordb.task_hooks import on_task_created, on_task_completed, on_task_
 logger = logging.getLogger(__name__)
 bot_application: Application = None
 
+
+# Helper function for scheduler
+async def send_message_to_user(telegram_id: int, message: str, parse_mode: str = None):
+    """
+    Send message to user via Telegram bot.
+    Used by scheduler for birthday/festival wishes.
+    
+    Args:
+        telegram_id: User's Telegram ID
+        message: Message text
+        parse_mode: Optional parse mode ('Markdown', 'HTML', None)
+    
+    Returns:
+        bool: True if sent successfully, False otherwise
+    """
+    global bot_application
+    if not bot_application:
+        logger.error("❌ Bot not initialized - cannot send message")
+        return False
+    
+    try:
+        await bot_application.bot.send_message(
+            chat_id=telegram_id,
+            text=message,
+            parse_mode=parse_mode
+        )
+        logger.info(f"✅ Message sent to user {telegram_id}")
+        return True
+    except Exception as e:
+        logger.error(f"❌ Failed to send message to {telegram_id}: {e}")
+        return False
+
+
 # Conversation states
 TASK_TITLE, TASK_DESCRIPTION, TASK_DUE_DATE = range(3)
 EDIT_CHOICE, EDIT_TITLE, EDIT_DESCRIPTION, EDIT_DUE_DATE = range(3, 7)
 BIRTHDAY_NAME, BIRTHDAY_RELATION, BIRTHDAY_DATE, BIRTHDAY_LANGUAGE = range(7, 11)
 AWAITING_TIME = 11
+POSTPONE_DAYS = 12
 
 # Constants
 COUNTRIES = ["India", "USA", "UK", "Canada", "Australia", "Germany", "France", "Japan"]
 LANGUAGES = {
-    'en': ' English', 'hi': ' Hindi', 'mr': ' Marathi',
-    'es': ' Spanish', 'fr': ' French', 'de': ' German',
-    'ar': ' Arabic', 'zh': ' Chinese', 'ja': ' Japanese'
+    'en': '🇬🇧 English', 'hi': '🇮🇳 Hindi', 'mr': '🇮🇳 Marathi',
+    'es': '🇪🇸 Spanish', 'fr': '🇫🇷 French', 'de': '🇩🇪 German',
+    'ar': '🇸🇦 Arabic', 'zh': '🇨🇳 Chinese', 'ja': '🇯🇵 Japanese'
 }
 TIMEZONES = {
     'UTC': 'UTC (London)', 'Asia/Kolkata': 'IST (India)',
@@ -98,31 +132,64 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     get_or_create_user(user.id, user.username, user.first_name)
     message = (
-        f" Welcome {user.first_name} to Smart Personal Planner!\n\n"
-        " AI-Powered Task Management\n\n"
-        " **Tasks:**\n/addtask /listtasks /edittask /complete /postpone /deletetask\n\n"
-        " **Celebrations:**\n/addbirthday /listbirthdays\n\n"
-        " **Settings:**\n/settings /setcountries /setlanguage /settimezone\n\n"
-        " **AI:**\n/suggest\n\n"
-        "Say: 'Add task: Buy groceries tomorrow'"
+        f"👋 Welcome {user.first_name} to Smart Personal Planner!\n\n"
+        "🤖 AI-Powered Task Management\n\n"
+        "📝 **Tasks:**\n"
+        "/addtask - Create task\n"
+        "/listtasks - View tasks\n"
+        "/complete - Mark done\n"
+        "/postpone - Delay task\n"
+        "/deletetask - Remove task\n"
+        "/suggest - AI recommendation\n\n"
+        "🎂 **Birthdays:**\n"
+        "/addbirthday - Add birthday\n"
+        "/listbirthdays - View birthdays\n"
+        "/deletebirthday - Remove birthday\n\n"
+        "⚙️ **Settings:**\n"
+        "/settings - View all settings\n"
+        "/setcountries - Festival countries\n"
+        "/setlanguage - Choose language\n"
+        "/settimezone - Set timezone\n"
+        "/settime - Daily message time\n"
+        "/togglebirthdays - Birthday wishes on/off\n"
+        "/togglefestivals - Festival greetings on/off\n\n"
+        "❓ **Help:**\n"
+        "/help - Show all commands\n\n"
+        "💡 Try: 'Add task: Buy groceries tomorrow'"
     )
     await update.message.reply_text(message)
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = (
-        " **All Commands**\n\n"
-        "**Tasks:** /addtask /listtasks /edittask /complete /postpone /deletetask /suggest\n"
-        "**Birthdays:** /addbirthday /listbirthdays /deletebirthday\n"
-        "**Settings:** /settings /setcountries /setlanguage /settimezone /settime\n"
-        "**Toggles:** /togglebirthdays /togglefestivals"
+        "📚 **All Commands**\n\n"
+        "**Tasks:**\n"
+        "/addtask - Create new task\n"
+        "/listtasks - View all tasks\n"
+        "/complete <ID> - Mark task done\n"
+        "/postpone <ID> - Postpone task\n"
+        "/deletetask <ID> - Delete task\n"
+        "/suggest - Get AI recommendation\n\n"
+        "**Birthdays:**\n"
+        "/addbirthday - Add birthday\n"
+        "/listbirthdays - View birthdays\n"
+        "/deletebirthday <name> - Remove birthday\n\n"
+        "**Settings:**\n"
+        "/settings - View preferences\n"
+        "/setcountries - Select countries\n"
+        "/setlanguage - Choose language\n"
+        "/settimezone - Set timezone\n"
+        "/settime - Set message time\n\n"
+        "**Toggles:**\n"
+        "/togglebirthdays - Birthday wishes on/off\n"
+        "/togglefestivals - Festival greetings on/off"
     )
     await update.message.reply_text(message, parse_mode='Markdown')
 
 
 # TASK CREATION
 async def addtask_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(" What's the task?")
+    await update.message.reply_text("📝 What's the task?")
     return TASK_TITLE
 
 
@@ -135,7 +202,7 @@ async def addtask_title(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def addtask_description(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.text != "/skip":
         context.user_data['task_description'] = update.message.text
-    await update.message.reply_text(" Due date? (tomorrow, 2026-02-20, in 3 days, or /skip)")
+    await update.message.reply_text("📅 Due date? (tomorrow, 2026-02-20, in 3 days, or /skip)")
     return TASK_DUE_DATE
 
 
@@ -152,9 +219,9 @@ async def addtask_due_date(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     duplicate = check_duplicate_task(user_id, title)
     if duplicate:
-        await update.message.reply_text(f" Similar task exists: #{duplicate.id} {duplicate.title}\n\nCreating anyway...")
+        await update.message.reply_text(f"⚠️ Similar task exists: #{duplicate.id} {duplicate.title}\n\nCreating anyway...")
     
-    analyzing_msg = await update.message.reply_text(" Analyzing with AI...")
+    analyzing_msg = await update.message.reply_text("🤖 Analyzing with AI...")
     
     db = SessionLocal()
     try:
@@ -173,26 +240,26 @@ async def addtask_due_date(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 db.commit()
                 db.refresh(task)
                 
-                #  NEW: Store embedding in Pinecone
+                # Store embedding in Pinecone
                 try:
                     await on_task_created(task)
                 except Exception as e:
-                    logger.warning(f" Embedding storage failed: {e}")
+                    logger.warning(f"⚠️ Embedding storage failed: {e}")
                 
                 await analyzing_msg.delete()
-                priority_emoji = {'high': '', 'medium': '🟡', 'low': '🟢'}
+                priority_emoji = {'high': '🔴', 'medium': '🟡', 'low': '🟢'}
                 await update.message.reply_text(
-                    f" Task Created!\n\n {title}\n{priority_emoji.get(result['priority'], '')} Priority: {result['priority'].upper()}\n"
-                    f" Score: {result['priority_score']}/100\n Est: {result['estimated_effort_minutes']}min\n"
-                    f" Due: {due_date.strftime('%d %b %Y') if due_date else 'No deadline'}\n\n {result['reasoning']}"
+                    f"✅ Task Created!\n\n📋 {title}\n{priority_emoji.get(result['priority'], '⚪')} Priority: {result['priority'].upper()}\n"
+                    f"📊 Score: {result['priority_score']}/100\n⏱️ Est: {result['estimated_effort_minutes']}min\n"
+                    f"📅 Due: {due_date.strftime('%d %b %Y') if due_date else 'No deadline'}\n\n🤖 {result['reasoning']}"
                 )
             else:
                 await analyzing_msg.delete()
-                await update.message.reply_text(f" Task created: {title}\n AI failed.")
+                await update.message.reply_text(f"✅ Task created: {title}\n⚠️ AI failed.")
         except Exception as e:
             logger.error(f"AI error: {e}")
             await analyzing_msg.delete()
-            await update.message.reply_text(f" Task created: {title}\n AI unavailable.")
+            await update.message.reply_text(f"✅ Task created: {title}\n⚠️ AI unavailable.")
     finally:
         db.close()
     
@@ -202,7 +269,7 @@ async def addtask_due_date(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def addtask_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.clear()
-    await update.message.reply_text(" Cancelled.")
+    await update.message.reply_text("❌ Cancelled.")
     return ConversationHandler.END
 
 
@@ -214,15 +281,15 @@ async def listtasks_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         tasks = db.query(Task).filter(Task.user_id == user_id, Task.status == TaskStatusEnum.PENDING).order_by(Task.priority_score.desc()).limit(20).all()
         if not tasks:
-            await update.message.reply_text(" No pending tasks!")
+            await update.message.reply_text("📭 No pending tasks!")
             return
-        message = " **Your Tasks**\n\n"
-        priority_emoji = {PriorityEnum.HIGH: '', PriorityEnum.MEDIUM: '🟡', PriorityEnum.LOW: '🟢'}
+        message = "📋 **Your Tasks**\n\n"
+        priority_emoji = {PriorityEnum.HIGH: '🔴', PriorityEnum.MEDIUM: '🟡', PriorityEnum.LOW: '🟢'}
         for task in tasks:
-            emoji = priority_emoji.get(task.priority, '')
+            emoji = priority_emoji.get(task.priority, '⚪')
             due_text = f"Due: {task.due_date.strftime('%d %b')}" if task.due_date else "No deadline"
             message += f"{emoji} #{task.id} {task.title}\n   {task.priority.value.upper()} ({task.priority_score}) | {due_text}\n\n"
-        await update.message.reply_text(message + " /edittask /complete /postpone /deletetask", parse_mode='Markdown')
+        await update.message.reply_text(message + "💡 /complete /postpone /deletetask", parse_mode='Markdown')
     finally:
         db.close()
 
@@ -233,29 +300,29 @@ async def complete_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         task_id = int(context.args[0]) if context.args else None
         if not task_id:
-            await update.message.reply_text(" Usage: /complete <ID>")
+            await update.message.reply_text("❌ Usage: /complete <ID>")
             return
     except:
-        await update.message.reply_text(" Invalid ID")
+        await update.message.reply_text("❌ Invalid ID")
         return
     db = SessionLocal()
     try:
         task = db.query(Task).filter(Task.id == task_id, Task.user_id == user_id).first()
         if not task:
-            await update.message.reply_text(f" Task #{task_id} not found")
+            await update.message.reply_text(f"❌ Task #{task_id} not found")
             return
         task.status = TaskStatusEnum.COMPLETED
         task.completed_at = datetime.utcnow()
         db.commit()
         db.refresh(task)
         
-        #  NEW: Update embedding with completion info
+        # Update embedding
         try:
             await on_task_completed(task)
         except Exception as e:
-            logger.warning(f" Embedding update failed: {e}")
+            logger.warning(f"⚠️ Embedding update failed: {e}")
         
-        await update.message.reply_text(f" Completed: {task.title}\n\n Great job!")
+        await update.message.reply_text(f"✅ Completed: {task.title}\n\n🎉 Great job!")
     finally:
         db.close()
 
@@ -263,29 +330,91 @@ async def complete_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def postpone_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     user_id = get_or_create_user(user.id)
+    
     try:
         task_id = int(context.args[0]) if context.args else None
         if not task_id:
-            await update.message.reply_text(" Usage: /postpone <ID>")
+            await update.message.reply_text("❌ Usage: /postpone <ID>")
             return
     except:
-        await update.message.reply_text(" Invalid ID")
+        await update.message.reply_text("❌ Invalid ID")
         return
+    
     db = SessionLocal()
     try:
         task = db.query(Task).filter(Task.id == task_id, Task.user_id == user_id).first()
         if not task:
-            await update.message.reply_text(f" Task #{task_id} not found")
+            await update.message.reply_text(f"❌ Task #{task_id} not found")
             return
-        if not task.due_date:
-            task.due_date = datetime.utcnow() + timedelta(days=1)
-        else:
-            task.due_date = task.due_date + timedelta(days=1)
-        task.postponed_count += 1
-        db.commit()
-        await update.message.reply_text(f" Postponed: {task.title}\n\nNew due: {task.due_date.strftime('%d %b %Y')}\nPostponed {task.postponed_count} time(s)")
+        
+        # Store for callback
+        context.user_data['postpone_task_id'] = task_id
+        context.user_data['postpone_task_title'] = task.title
+        
+        # Create buttons
+        keyboard = [
+            [InlineKeyboardButton("1 day", callback_data="postpone_1")],
+            [InlineKeyboardButton("2 days", callback_data="postpone_2")],
+            [InlineKeyboardButton("3 days", callback_data="postpone_3")],
+            [InlineKeyboardButton("1 week", callback_data="postpone_7")],
+            [InlineKeyboardButton("❌ Cancel", callback_data="postpone_cancel")]
+        ]
+        
+        await update.message.reply_text(
+            f"📅 Postpone: {task.title}\n\nBy how many days?",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
     finally:
         db.close()
+
+
+async def postpone_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    action = query.data.replace('postpone_', '')
+    
+    if action == 'cancel':
+        await query.edit_message_text("❌ Cancelled")
+        context.user_data.clear()
+        return
+    
+    days = int(action)
+    task_id = context.user_data.get('postpone_task_id')
+    task_title = context.user_data.get('postpone_task_title')
+    
+    if not task_id:
+        await query.edit_message_text("❌ Error: Task not found")
+        return
+    
+    user = query.from_user
+    user_id = get_or_create_user(user.id)
+    
+    db = SessionLocal()
+    try:
+        task = db.query(Task).filter(Task.id == task_id, Task.user_id == user_id).first()
+        if not task:
+            await query.edit_message_text(f"❌ Task #{task_id} not found")
+            return
+        
+        if not task.due_date:
+            task.due_date = datetime.utcnow() + timedelta(days=days)
+        else:
+            task.due_date = task.due_date + timedelta(days=days)
+        
+        task.postponed_count += 1
+        db.commit()
+        
+        days_text = "day" if days == 1 else "days"
+        await query.edit_message_text(
+            f"📅 Postponed: {task_title}\n\n"
+            f"New due: {task.due_date.strftime('%d %b %Y')}\n"
+            f"Postponed by {days} {days_text}\n"
+            f"Total postpones: {task.postponed_count}"
+        )
+    finally:
+        db.close()
+        context.user_data.clear()
 
 
 async def deletetask_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -294,29 +423,29 @@ async def deletetask_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
     try:
         task_id = int(context.args[0]) if context.args else None
         if not task_id:
-            await update.message.reply_text(" Usage: /deletetask <ID>")
+            await update.message.reply_text("❌ Usage: /deletetask <ID>")
             return
     except:
-        await update.message.reply_text(" Invalid ID")
+        await update.message.reply_text("❌ Invalid ID")
         return
     db = SessionLocal()
     try:
         task = db.query(Task).filter(Task.id == task_id, Task.user_id == user_id).first()
         if not task:
-            await update.message.reply_text(f" Task #{task_id} not found")
+            await update.message.reply_text(f"❌ Task #{task_id} not found")
             return
         title = task.title
         task_id_to_delete = task.id
         db.delete(task)
         db.commit()
         
-        # NEW: Delete embedding from Pinecone
+        # Delete embedding
         try:
             await on_task_deleted(task_id_to_delete)
         except Exception as e:
-            logger.warning(f" Embedding deletion failed: {e}")
+            logger.warning(f"⚠️ Embedding deletion failed: {e}")
         
-        await update.message.reply_text(f" Deleted: {title}")
+        await update.message.reply_text(f"🗑️ Deleted: {title}")
     finally:
         db.close()
 
@@ -328,19 +457,16 @@ async def suggest_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         task = db.query(Task).filter(Task.user_id == user_id, Task.status == TaskStatusEnum.PENDING).order_by(Task.priority_score.desc()).first()
         if not task:
-            await update.message.reply_text(" No pending tasks!")
+            await update.message.reply_text("🎉 No pending tasks!")
             return
-        priority_emoji = {PriorityEnum.HIGH: '', PriorityEnum.MEDIUM: '🟡', PriorityEnum.LOW: '🟢'}
-        emoji = priority_emoji.get(task.priority, '')
-        await update.message.reply_text(f" **AI Recommendation**\n\nWork on this next:\n\n{emoji} {task.title}\n\n {task.priority_score}/100 |  {task.estimated_effort_minutes or '?'}min\n\nReady? /complete {task.id} when done!", parse_mode='Markdown')
+        priority_emoji = {PriorityEnum.HIGH: '🔴', PriorityEnum.MEDIUM: '🟡', PriorityEnum.LOW: '🟢'}
+        emoji = priority_emoji.get(task.priority, '⚪')
+        await update.message.reply_text(f"💡 **AI Recommendation**\n\nWork on this next:\n\n{emoji} {task.title}\n\n📊 {task.priority_score}/100 | ⏱️ {task.estimated_effort_minutes or '?'}min\n\nReady? /complete {task.id} when done!", parse_mode='Markdown')
     finally:
         db.close()
 
 
-# ==========================================
 # SETTINGS
-# ==========================================
-
 async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     user_id = get_or_create_user(user.id, user.username, user.first_name)
@@ -352,15 +478,25 @@ async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             db.add(prefs)
             db.commit()
             db.refresh(prefs)
+        
         countries = ', '.join(prefs.festival_countries) if prefs.festival_countries else 'None'
-        lang = LANGUAGES.get(prefs.language, ' English')
+        lang = LANGUAGES.get(prefs.language, '🇬🇧 English')
         tz = TIMEZONES.get(prefs.timezone, prefs.timezone)
         msg_time = prefs.daily_digest_time.strftime('%I:%M %p') if prefs.daily_digest_time else '09:00 AM'
+        
+        birthday_status = '✅' if prefs.auto_send_birthday_wishes else '❌'
+        festival_status = '✅' if prefs.auto_send_festival_wishes else '❌'
+        
         message = (
-            f" **Settings**\n\n Countries: {countries}\n Timezone: {tz}\n Message Time: {msg_time}\n Language: {lang}\n\n"
-            f" Birthdays: {'' if prefs.auto_send_birthday_wishes else ''}\n"
-            f" Festivals: {'' if prefs.auto_send_festival_wishes else ''}\n\n"
-            f"/setcountries /settimezone /setlanguage /settime /togglebirthdays /togglefestivals"
+            f"⚙️ **Settings**\n\n"
+            f"🌍 Countries: {countries}\n"
+            f"🕐 Timezone: {tz}\n"
+            f"⏰ Message Time: {msg_time}\n"
+            f"🗣️ Language: {lang}\n\n"
+            f"🎂 Birthdays: {birthday_status}\n"
+            f"🎉 Festivals: {festival_status}\n\n"
+            f"/setcountries /settimezone /setlanguage /settime\n"
+            f"/togglebirthdays /togglefestivals"
         )
         await update.message.reply_text(message, parse_mode='Markdown')
     finally:
@@ -381,10 +517,10 @@ async def setcountries_command(update: Update, context: ContextTypes.DEFAULT_TYP
         selected = prefs.festival_countries or []
         keyboard = []
         for country in COUNTRIES:
-            emoji = "" if country in selected else "⬜"
+            emoji = "✅" if country in selected else "⬜"
             keyboard.append([InlineKeyboardButton(f"{emoji} {country}", callback_data=f"country_{country}")])
-        keyboard.append([InlineKeyboardButton(" Done", callback_data="country_done")])
-        await update.message.reply_text(f" **Select Countries** (max 4)\n\nSelected: {len(selected)}/4\n{', '.join(selected) if selected else 'None'}", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+        keyboard.append([InlineKeyboardButton("✅ Done", callback_data="country_done")])
+        await update.message.reply_text(f"🌍 **Select Countries** (max 4)\n\nSelected: {len(selected)}/4\n{', '.join(selected) if selected else 'None'}", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     finally:
         db.close()
 
@@ -396,7 +532,7 @@ async def country_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = get_or_create_user(user.id, user.username, user.first_name)
     action = query.data.replace('country_', '')
     if action == "done":
-        await query.edit_message_text(" Countries updated!")
+        await query.edit_message_text("✅ Countries updated!")
         return
     db = SessionLocal()
     try:
@@ -407,23 +543,23 @@ async def country_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif len(selected) < 4:
             selected.append(action)
         else:
-            await query.answer(" Max 4 countries!", show_alert=True)
+            await query.answer("❌ Max 4 countries!", show_alert=True)
             return
         prefs.festival_countries = selected
         db.commit()
         keyboard = []
         for country in COUNTRIES:
-            emoji = "" if country in selected else "⬜"
+            emoji = "✅" if country in selected else "⬜"
             keyboard.append([InlineKeyboardButton(f"{emoji} {country}", callback_data=f"country_{country}")])
-        keyboard.append([InlineKeyboardButton(" Done", callback_data="country_done")])
-        await query.edit_message_text(f" **Select Countries** (max 4)\n\nSelected: {len(selected)}/4\n{', '.join(selected) if selected else 'None'}", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+        keyboard.append([InlineKeyboardButton("✅ Done", callback_data="country_done")])
+        await query.edit_message_text(f"🌍 **Select Countries** (max 4)\n\nSelected: {len(selected)}/4\n{', '.join(selected) if selected else 'None'}", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     finally:
         db.close()
 
 
 async def settimezone_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[InlineKeyboardButton(name, callback_data=f"tz_{code}")] for code, name in TIMEZONES.items()]
-    await update.message.reply_text(" **Select Timezone:**", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+    await update.message.reply_text("🕐 **Select Timezone:**", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
 
 async def timezone_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -440,14 +576,14 @@ async def timezone_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             db.add(prefs)
         prefs.timezone = tz_code
         db.commit()
-        await query.edit_message_text(f" Timezone: {TIMEZONES.get(tz_code)}")
+        await query.edit_message_text(f"✅ Timezone: {TIMEZONES.get(tz_code)}")
     finally:
         db.close()
 
 
 async def setlanguage_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[InlineKeyboardButton(name, callback_data=f"lang_{code}")] for code, name in LANGUAGES.items()]
-    await update.message.reply_text(" **Select Language:**", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+    await update.message.reply_text("🗣️ **Select Language:**", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
 
 async def language_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -464,30 +600,14 @@ async def language_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             db.add(prefs)
         prefs.language = lang_code
         db.commit()
-        await query.edit_message_text(f" Language: {LANGUAGES.get(lang_code)}")
-    finally:
-        db.close()
-
-
-async def toggle_birthdays(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    user_id = get_or_create_user(user.id)
-    db = SessionLocal()
-    try:
-        prefs = db.query(UserPreferences).filter(UserPreferences.user_id == user_id).first()
-        if not prefs:
-            prefs = UserPreferences(user_id=user_id)
-            db.add(prefs)
-        prefs.auto_send_birthday_wishes = not prefs.auto_send_birthday_wishes
-        db.commit()
-        await update.message.reply_text(f" Birthday wishes: {' Enabled' if prefs.auto_send_birthday_wishes else ' Disabled'}")
+        await query.edit_message_text(f"✅ Language: {LANGUAGES.get(lang_code)}")
     finally:
         db.close()
 
 
 async def settime_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        " **Set Daily Message Time**\n\n"
+        "⏰ **Set Daily Message Time**\n\n"
         "Send time in 24-hour format.\n"
         "Examples: 09:00, 18:30, 07:00\n\n"
         "Send /cancel to cancel.",
@@ -511,12 +631,12 @@ async def settime_receive(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 db.add(prefs)
             prefs.daily_digest_time = msg_time
             db.commit()
-            await update.message.reply_text(f" Daily messages at {msg_time.strftime('%I:%M %p')}")
+            await update.message.reply_text(f"✅ Daily messages at {msg_time.strftime('%I:%M %p')}")
         finally:
             db.close()
         return ConversationHandler.END
     except:
-        await update.message.reply_text(" Invalid! Use HH:MM (e.g., 09:00)")
+        await update.message.reply_text("❌ Invalid! Use HH:MM (e.g., 09:00)")
         return AWAITING_TIME
 
 
@@ -531,7 +651,7 @@ async def toggle_birthdays(update: Update, context: ContextTypes.DEFAULT_TYPE):
             db.add(prefs)
         prefs.auto_send_birthday_wishes = not prefs.auto_send_birthday_wishes
         db.commit()
-        await update.message.reply_text(f" Birthday wishes: {' Enabled' if prefs.auto_send_birthday_wishes else ' Disabled'}")
+        await update.message.reply_text(f"🎂 Birthday wishes: {'✅ Enabled' if prefs.auto_send_birthday_wishes else '❌ Disabled'}")
     finally:
         db.close()
 
@@ -547,25 +667,25 @@ async def toggle_festivals(update: Update, context: ContextTypes.DEFAULT_TYPE):
             db.add(prefs)
         prefs.auto_send_festival_wishes = not prefs.auto_send_festival_wishes
         db.commit()
-        await update.message.reply_text(f" Festival greetings: {' Enabled' if prefs.auto_send_festival_wishes else ' Disabled'}")
+        await update.message.reply_text(f"🎉 Festival greetings: {'✅ Enabled' if prefs.auto_send_festival_wishes else '❌ Disabled'}")
     finally:
         db.close()
 
 
 # BIRTHDAYS
 async def addbirthday_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(" **Add Birthday**\n\nWhat's the person's name?")
+    await update.message.reply_text("🎂 **Add Birthday**\n\nWhat's the person's name?", parse_mode='Markdown')
     return BIRTHDAY_NAME
 
 
 async def addbirthday_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['birthday_name'] = update.message.text.strip()
     keyboard = [
-        [InlineKeyboardButton("‍‍‍ Family", callback_data="rel_family")],
-        [InlineKeyboardButton(" Friend", callback_data="rel_friend")],
-        [InlineKeyboardButton(" Colleague", callback_data="rel_colleague")],
-        [InlineKeyboardButton(" Partner", callback_data="rel_partner")],
-        [InlineKeyboardButton(" Custom", callback_data="rel_custom")]
+        [InlineKeyboardButton("👨‍👩‍👧‍👦 Family", callback_data="rel_family")],
+        [InlineKeyboardButton("👫 Friend", callback_data="rel_friend")],
+        [InlineKeyboardButton("💼 Colleague", callback_data="rel_colleague")],
+        [InlineKeyboardButton("💑 Partner", callback_data="rel_partner")],
+        [InlineKeyboardButton("✏️ Custom", callback_data="rel_custom")]
     ]
     await update.message.reply_text(f"What's your relation with {context.user_data['birthday_name']}?", reply_markup=InlineKeyboardMarkup(keyboard))
     return BIRTHDAY_RELATION
@@ -579,13 +699,13 @@ async def addbirthday_relation_callback(update: Update, context: ContextTypes.DE
         await query.edit_message_text("Type the relation:")
         return BIRTHDAY_RELATION
     context.user_data['birthday_relation'] = relation
-    await query.edit_message_text(f" Relation: {relation}\n\n Birthday? (DD-MM or DD/MM)")
+    await query.edit_message_text(f"✅ Relation: {relation}\n\n📅 Birthday? (DD-MM or DD/MM)")
     return BIRTHDAY_DATE
 
 
 async def addbirthday_relation_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['birthday_relation'] = update.message.text.strip()
-    await update.message.reply_text(f" Relation: {context.user_data['birthday_relation']}\n\n Birthday? (DD-MM or DD/MM)")
+    await update.message.reply_text(f"✅ Relation: {context.user_data['birthday_relation']}\n\n📅 Birthday? (DD-MM or DD/MM)")
     return BIRTHDAY_DATE
 
 
@@ -600,10 +720,10 @@ async def addbirthday_date(update: Update, context: ContextTypes.DEFAULT_TYPE):
             raise ValueError
         context.user_data['birthday_date'] = datetime(2000, month, day).date()
         keyboard = [[InlineKeyboardButton(name, callback_data=f"blang_{code}")] for code, name in LANGUAGES.items()]
-        await update.message.reply_text(f" **Wish Language** for {context.user_data['birthday_name']}?", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+        await update.message.reply_text(f"🗣️ **Wish Language** for {context.user_data['birthday_name']}?", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
         return BIRTHDAY_LANGUAGE
     except:
-        await update.message.reply_text(" Invalid! Use DD-MM or DD/MM")
+        await update.message.reply_text("❌ Invalid! Use DD-MM or DD/MM")
         return BIRTHDAY_DATE
 
 
@@ -624,12 +744,12 @@ async def addbirthday_language(update: Update, context: ContextTypes.DEFAULT_TYP
         )
         db.add(birthday)
         db.commit()
-        await query.edit_message_text(f" **Birthday Added!**\n\n {birthday.person_name}\n {birthday.relation}\n {birthday.birthday_date.strftime('%B %d')}\n {LANGUAGES.get(lang_code)}", parse_mode='Markdown')
+        await query.edit_message_text(f"✅ **Birthday Added!**\n\n👤 {birthday.person_name}\n🔗 {birthday.relation}\n📅 {birthday.birthday_date.strftime('%B %d')}\n🗣️ {LANGUAGES.get(lang_code)}", parse_mode='Markdown')
         context.user_data.clear()
         return ConversationHandler.END
     except Exception as e:
         logger.error(f"Failed: {e}")
-        await query.edit_message_text(" Failed to save")
+        await query.edit_message_text("❌ Failed to save")
         context.user_data.clear()
         return ConversationHandler.END
     finally:
@@ -638,7 +758,7 @@ async def addbirthday_language(update: Update, context: ContextTypes.DEFAULT_TYP
 
 async def addbirthday_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.clear()
-    await update.message.reply_text(" Cancelled")
+    await update.message.reply_text("❌ Cancelled")
     return ConversationHandler.END
 
 
@@ -649,17 +769,17 @@ async def listbirthdays_command(update: Update, context: ContextTypes.DEFAULT_TY
     try:
         birthdays = db.query(Birthday).filter(Birthday.user_id == user_id).order_by(Birthday.birthday_date).all()
         if not birthdays:
-            await update.message.reply_text(" No birthdays saved!\n\nUse /addbirthday")
+            await update.message.reply_text("📭 No birthdays saved!\n\nUse /addbirthday")
             return
         upcoming = [b for b in birthdays if b.is_birthday_soon(30)]
-        message = " **Birthdays**\n\n"
+        message = "🎂 **Birthdays**\n\n"
         if upcoming:
-            message += "** Upcoming (30 days):**\n"
+            message += "**📅 Upcoming (30 days):**\n"
             for b in upcoming:
-                message += f"• {b.person_name} ({b.relation}) - {b.birthday_date.strftime('%B %d')} - {b.days_until_birthday()} days -  {b.get_language_name()}\n\n"
-        message += f"\n** All ({len(birthdays)}):**\n"
+                message += f"• {b.person_name} ({b.relation}) - {b.birthday_date.strftime('%B %d')} - {b.days_until_birthday()} days - 🗣️ {b.get_language_name()}\n\n"
+        message += f"\n**📋 All ({len(birthdays)}):**\n"
         for b in birthdays[:10]:
-            message += f"• {b.person_name} ({b.relation}) - {b.birthday_date.strftime('%B %d')} -  {b.get_language_name()}\n"
+            message += f"• {b.person_name} ({b.relation}) - {b.birthday_date.strftime('%B %d')} - 🗣️ {b.get_language_name()}\n"
         if len(birthdays) > 10:
             message += f"\n...and {len(birthdays)-10} more"
         await update.message.reply_text(message, parse_mode='Markdown')
@@ -671,18 +791,18 @@ async def deletebirthday_command(update: Update, context: ContextTypes.DEFAULT_T
     user = update.effective_user
     user_id = get_or_create_user(user.id)
     if not context.args:
-        await update.message.reply_text(" Usage: /deletebirthday <name>")
+        await update.message.reply_text("❌ Usage: /deletebirthday <name>")
         return
     name = ' '.join(context.args)
     db = SessionLocal()
     try:
         birthday = db.query(Birthday).filter(Birthday.user_id == user_id, Birthday.person_name.ilike(f"%{name}%")).first()
         if not birthday:
-            await update.message.reply_text(f" Not found: {name}")
+            await update.message.reply_text(f"❌ Not found: {name}")
             return
         db.delete(birthday)
         db.commit()
-        await update.message.reply_text(f" Deleted: {birthday.person_name}")
+        await update.message.reply_text(f"🗑️ Deleted: {birthday.person_name}")
     finally:
         db.close()
 
@@ -693,17 +813,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for trigger in ['add task:', 'create task:', 'new task:']:
             if trigger in message:
                 context.user_data['task_title'] = message.split(trigger, 1)[1].strip()
-                await update.message.reply_text(f" Creating: {context.user_data['task_title']}\n\nDescription? (or /skip)")
+                await update.message.reply_text(f"📝 Creating: {context.user_data['task_title']}\n\nDescription? (or /skip)")
                 return TASK_DESCRIPTION
     await update.message.reply_text("Try:\n/addtask /listtasks /suggest\nOr: 'Add task: <task name>'")
-
 
 
 # BOT STARTUP
 async def start_bot():
     global bot_application
     if not settings.telegram_bot_token:
-        logger.warning(" No token")
+        logger.warning("⚠️ No token")
         return
     try:
         bot_application = Application.builder().token(settings.telegram_bot_token).build()
@@ -762,15 +881,16 @@ async def start_bot():
         bot_application.add_handler(CallbackQueryHandler(country_callback, pattern="^country_"))
         bot_application.add_handler(CallbackQueryHandler(timezone_callback, pattern="^tz_"))
         bot_application.add_handler(CallbackQueryHandler(language_callback, pattern="^lang_"))
+        bot_application.add_handler(CallbackQueryHandler(postpone_callback, pattern="^postpone_"))
         bot_application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         
         logger.info("Starting bot...")
         await bot_application.initialize()
         await bot_application.start()
         await bot_application.updater.start_polling()
-        logger.info(" Bot started!")
+        logger.info("✅ Bot started!")
     except Exception as e:
-        logger.error(f" Failed: {e}")
+        logger.error(f"❌ Failed: {e}")
         raise
 
 
@@ -782,6 +902,7 @@ async def stop_bot():
                 await bot_application.updater.stop()
             await bot_application.stop()
             await bot_application.shutdown()
-            logger.info(" Bot stopped")
+            logger.info("✅ Bot stopped")
         except Exception as e:
             logger.error(f"Error: {e}")
+
