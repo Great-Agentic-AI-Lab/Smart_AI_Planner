@@ -12,11 +12,23 @@ from app.config import settings
 from app.database import init_db
 from app.api import tasks, events, chat, webhooks
 
+# ---------------------------
+# LOGGING CONFIGURATION
+# ---------------------------
 logger = logging.getLogger(__name__)
+
+# Configure logging with more detail
 logging.basicConfig(
     level=getattr(logging, settings.log_level, "INFO"),
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
 )
+
+# Set specific loggers to INFO to see database logs
+logging.getLogger("app.database").setLevel(logging.INFO)
+logging.getLogger("app.telegram").setLevel(logging.INFO)
+logging.getLogger("app.vectordb").setLevel(logging.INFO)
+logging.getLogger("app.agents").setLevel(logging.INFO)
 
 
 @asynccontextmanager
@@ -27,43 +39,82 @@ async def lifespan(app: FastAPI):
     # ---------------------------
     # Startup
     # ---------------------------
+    logger.info("=" * 60)
     logger.info("Starting Smart Personal Planner API...")
+    logger.info("=" * 60)
 
-    # Initialize Pinecone (NEW API)
+    # Initialize Database Tables
+    try:
+        logger.info("Initializing database...")
+        init_db()
+        logger.info("Database initialization complete")
+    except Exception as e:
+        logger.error(f"Database initialization failed: {e}")
+        raise
+
+    # Initialize Pinecone
     try:
         if settings.pinecone_api_key:
             from pinecone import Pinecone
             pc = Pinecone(api_key=settings.pinecone_api_key)
             logger.info("Pinecone initialized")
+        else:
+            logger.warning("Pinecone API key not configured")
     except Exception as e:
         logger.warning(f"Pinecone initialization failed: {e}")
 
-    # Start Telegram bot (IMPROVED: better error handling)
+    # Start Telegram bot
     try:
         if settings.telegram_bot_token:
             from app.telegram.bot import start_bot
             await start_bot()
-            logger.info(" Telegram bot started")
+            logger.info("Telegram bot started")
         else:
-            logger.warning(" No Telegram token - bot disabled")
+            logger.warning("No Telegram token - bot disabled")
     except Exception as e:
-        logger.warning(f" Telegram bot failed to start: {e}")
+        logger.warning(f"Telegram bot failed to start: {e}")
         logger.info("Server will continue without Telegram bot")
+
+    # Start Scheduler for birthday/festival wishes
+    try:
+        from app.scheduler import start_scheduler
+        start_scheduler()
+        logger.info("Scheduler started (birthdays, festivals, reminders)")
+    except Exception as e:
+        logger.warning(f"Scheduler failed to start: {e}")
+
+    logger.info("=" * 60)
+    logger.info("Application startup complete!")
+    logger.info("=" * 60)
 
     yield
 
     # ---------------------------
     # Shutdown
     # ---------------------------
-    logger.info(" Shutting down Smart Personal Planner API...")
+    logger.info("=" * 60)
+    logger.info("Shutting down Smart Personal Planner API...")
+    logger.info("=" * 60)
 
     # Stop Telegram bot
     try:
         from app.telegram.bot import stop_bot
         await stop_bot()
-        logger.info(" Telegram bot stopped")
+        logger.info("Telegram bot stopped")
     except Exception as e:
-        logger.warning(f" Telegram bot failed to stop: {e}")
+        logger.warning(f"Telegram bot failed to stop: {e}")
+
+    # Stop Scheduler
+    try:
+        from app.scheduler import stop_scheduler
+        stop_scheduler()
+        logger.info("Scheduler stopped")
+    except Exception as e:
+        logger.warning(f"Scheduler failed to stop: {e}")
+
+    logger.info("=" * 60)
+    logger.info("Application shutdown complete")
+    logger.info("=" * 60)
 
 
 # ---------------------------
@@ -126,7 +177,7 @@ async def health_check():
 app.include_router(tasks.router, prefix="/api/tasks", tags=["Tasks"])
 app.include_router(events.router, prefix="/api/events", tags=["Events"])
 app.include_router(chat.router, prefix="/api/chat", tags=["Chat"])
-app.include_router(webhooks.router, prefix="/webhooks", tags=["Webhooks"])
+app.include_router(webhooks.router, prefix="/api/webhooks", tags=["Webhooks"])
 
 # ---------------------------
 # Uvicorn Runner

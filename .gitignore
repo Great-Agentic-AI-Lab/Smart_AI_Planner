@@ -27,7 +27,6 @@ wheels/
 .env
 .env.local
 .env.*.local
-.evn.example
 
 # IDE
 .vscode/
