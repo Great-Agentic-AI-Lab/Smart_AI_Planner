@@ -537,7 +537,15 @@ async def country_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db = SessionLocal()
     try:
         prefs = db.query(UserPreferences).filter(UserPreferences.user_id == user_id).first()
-        selected = prefs.festival_countries or []
+        if not prefs:
+            prefs = UserPreferences(user_id=user_id)
+            db.add(prefs)
+            db.commit()
+            db.refresh(prefs)
+
+        # ✅ FIX: Copy list so SQLAlchemy detects the mutation on JSON column
+        selected = list(prefs.festival_countries or [])
+
         if action in selected:
             selected.remove(action)
         elif len(selected) < 4:
@@ -545,14 +553,21 @@ async def country_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await query.answer("❌ Max 4 countries!", show_alert=True)
             return
+
+        # ✅ Assign new list to trigger SQLAlchemy change detection
         prefs.festival_countries = selected
         db.commit()
+
         keyboard = []
         for country in COUNTRIES:
             emoji = "✅" if country in selected else "⬜"
             keyboard.append([InlineKeyboardButton(f"{emoji} {country}", callback_data=f"country_{country}")])
         keyboard.append([InlineKeyboardButton("✅ Done", callback_data="country_done")])
-        await query.edit_message_text(f"🌍 **Select Countries** (max 4)\n\nSelected: {len(selected)}/4\n{', '.join(selected) if selected else 'None'}", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+        await query.edit_message_text(
+            f"🌍 **Select Countries** (max 4)\n\nSelected: {len(selected)}/4\n{', '.join(selected) if selected else 'None'}",
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode='Markdown'
+        )
     finally:
         db.close()
 
@@ -808,21 +823,21 @@ async def deletebirthday_command(update: Update, context: ContextTypes.DEFAULT_T
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    message = update.message.text.lower()
-    if any(p in message for p in ['add task', 'create task', 'new task']):
-        for trigger in ['add task:', 'create task:', 'new task:']:
-            if trigger in message:
-                context.user_data['task_title'] = message.split(trigger, 1)[1].strip()
-                await update.message.reply_text(f"📝 Creating: {context.user_data['task_title']}\n\nDescription? (or /skip)")
-                return TASK_DESCRIPTION
-    await update.message.reply_text("Try:\n/addtask /listtasks /suggest\nOr: 'Add task: <task name>'")
+    """Handle plain text messages - guide user to commands."""
+    await update.message.reply_text(
+        "👋 Use commands to interact:\n\n"
+        "/addtask - Create a task\n"
+        "/listtasks - View your tasks\n"
+        "/suggest - AI recommendation\n"
+        "/help - See all commands"
+    )
 
 
 # BOT STARTUP
 async def start_bot():
     global bot_application
     if not settings.telegram_bot_token:
-        logger.warning("⚠️ No token")
+        logger.warning("No token")
         return
     try:
         bot_application = Application.builder().token(settings.telegram_bot_token).build()
@@ -888,9 +903,9 @@ async def start_bot():
         await bot_application.initialize()
         await bot_application.start()
         await bot_application.updater.start_polling()
-        logger.info("✅ Bot started!")
+        logger.info("Bot started!")
     except Exception as e:
-        logger.error(f"❌ Failed: {e}")
+        logger.error(f"Failed: {e}")
         raise
 
 
@@ -905,4 +920,3 @@ async def stop_bot():
             logger.info("✅ Bot stopped")
         except Exception as e:
             logger.error(f"Error: {e}")
-
